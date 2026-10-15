@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Облачный Кит — Дашборд ДОУ №2</title>
+<style>
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.55);
+    --glass-bg-strong: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.7);
+    --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    --text-main: #1a2340;
+    --text-muted: #5a6684;
+    --radius: 22px;
+    --radius-sm: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text-main);
+    background: #e8eefc;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: ""; position: fixed; inset: -20%; z-index: -2;
+    background:
+      radial-gradient(circle at 15% 20%, #a5d8ff 0%, transparent 45%),
+      radial-gradient(circle at 85% 15%, #ffd8a8 0%, transparent 40%),
+      radial-gradient(circle at 20% 85%, #b2f2bb 0%, transparent 45%),
+      radial-gradient(circle at 80% 80%, #eebefa 0%, transparent 45%),
+      linear-gradient(135deg, #f1f3ff 0%, #e3ecff 100%);
+    animation: floatBg 24s ease-in-out infinite alternate;
+  }
+  @keyframes floatBg { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(2%, -2%) scale(1.05); } }
+  .bubble {
+    position: fixed; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.1));
+    filter: blur(2px); z-index: -1;
+    animation: floatUp 18s ease-in-out infinite; pointer-events: none;
+  }
+  @keyframes floatUp { 0%,100% { transform: translateY(0) scale(1); opacity: 0.5; } 50% { transform: translateY(-40px) scale(1.1); opacity: 0.8; } }
+
+  header.topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; margin: 18px 22px 0;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius); box-shadow: var(--glass-shadow);
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .logo {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: linear-gradient(135deg, #4dabf7, #cc5de8);
+    display: grid; place-items: center; font-size: 28px;
+    box-shadow: 0 6px 18px rgba(77,171,247,0.4);
+  }
+  .brand h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .brand p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .clock { text-align: right; }
+  .clock .time {
+    font-size: 34px; font-weight: 800; letter-spacing: -1px;
+    background: linear-gradient(135deg, #4dabf7, #cc5de8);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; font-variant-numeric: tabular-nums;
+  }
+  .clock .date { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+  .clock .season {
+    display: inline-block; margin-top: 4px; font-size: 11px;
+    padding: 3px 10px; border-radius: 999px;
+    background: rgba(77,171,247,0.15); color: #1864ab; font-weight: 600;
+  }
+  .dashboard {
+    display: grid; grid-template-columns: 1.25fr 1.25fr 1fr;
+    grid-template-rows: auto auto; gap: 18px;
+    padding: 18px 22px 26px; min-height: calc(100vh - 110px);
+  }
+  .widget {
+    background: var(--glass-bg);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius); box-shadow: var(--glass-shadow);
+    padding: 20px 22px; display: flex; flex-direction: column;
+    overflow: hidden; position: relative;
+  }
+  .widget::after {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  }
+  .widget h2 {
+    font-size: 15px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1.2px;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  }
+  .widget h2 .icon { font-size: 20px; }
+  .widget.daily { grid-row: span 2; grid-column: 1; }
+  .widget.lessons { grid-row: span 2; grid-column: 2; }
+  .widget.food { grid-column: 3; }
+  .widget.calendar { grid-column: 3; }
+
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tab {
+    font-size: 11px; padding: 6px 11px; border-radius: 999px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.6);
+    color: var(--text-muted); cursor: pointer;
+    transition: all .25s ease; font-weight: 600; white-space: nowrap;
+  }
+  .tab:hover { background: rgba(255,255,255,0.8); }
+  .tab.active {
+    background: linear-gradient(135deg, #4dabf7, #cc5de8);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 12px rgba(77,171,247,0.4);
+  }
+
+  .day-list { display: flex; flex-direction: column; gap: 7px; overflow-y: auto; padding-right: 4px; }
+  .day-list::-webkit-scrollbar { width: 5px; }
+  .day-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+  .moment {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.5);
+    transition: all .3s ease; font-size: 13px;
+  }
+  .moment.active {
+    background: linear-gradient(135deg, rgba(77,171,247,0.95), rgba(204,93,232,0.95));
+    color: #fff; transform: scale(1.02);
+    box-shadow: 0 8px 22px rgba(77,171,247,0.45);
+  }
+  .moment .m-time { font-weight: 700; font-size: 12px; white-space: nowrap; min-width: 92px; font-variant-numeric: tabular-nums; }
+  .moment .m-name { flex: 1; font-weight: 500; }
+  .moment .m-progress { width: 80px; height: 6px; border-radius: 4px; background: rgba(255,255,255,0.35); overflow: hidden; }
+  .moment .m-progress > div { height: 100%; background: #fff; border-radius: 4px; transition: width 1s linear; }
+  .moment:not(.active) .m-progress { display: none; }
+
+  .waiting {
+    display: grid; place-items: center; flex: 1;
+    text-align: center; color: var(--text-muted);
+    font-size: 16px; font-weight: 600; padding: 30px 10px;
+  }
+  .waiting .big { font-size: 46px; margin-bottom: 12px; }
+
+  .half-badge {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px; padding: 8px 12px; border-radius: 12px;
+    background: linear-gradient(135deg, rgba(77,171,247,0.15), rgba(204,93,232,0.15));
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+  .half-badge .hb-icon { font-size: 18px; }
+  .half-badge .hb-text {
+    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.6px;
+  }
+  .lesson-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6));
+    border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px;
+    border-left: 5px solid #4dabf7; box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+  }
+  .lesson-card .l-area {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 4px;
+  }
+  .lesson-card .l-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .lesson-card .l-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px; font-weight: 700; padding: 3px 9px;
+    border-radius: 999px; background: rgba(77,171,247,0.15);
+    color: #1864ab; letter-spacing: 0.5px;
+  }
+  .badge.od { background: rgba(77,171,247,0.18); color: #1864ab; }
+  .badge.odrm { background: rgba(204,93,232,0.18); color: #862e9c; }
+  .badge.hall { background: rgba(255,212,59,0.25); color: #997404; }
+  .badge.corr { background: rgba(255,107,107,0.18); color: #c92a2a; }
+
+  .food-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, #ffd8a8, #ffec99); margin-bottom: 12px;
+  }
+  .food-header .f-name { font-weight: 800; font-size: 16px; color: #7a4a00; }
+  .food-header .f-time { font-size: 13px; color: #7a4a00; font-weight: 600; }
+  .food-items { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 170px; }
+  .food-item {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12.5px; padding: 7px 10px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 10px; border: 1px solid rgba(255,255,255,0.6);
+  }
+  .food-item .fi-name { font-weight: 500; }
+  .food-item .fi-weight { color: var(--text-muted); font-size: 11px; font-weight: 600; white-space: nowrap; margin-left: 8px; }
+  .food-subtitle {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    margin: 8px 0 4px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .cal-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 260px; padding-right: 4px; }
+  .cal-item {
+    display: flex; gap: 12px; align-items: center;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.6);
+    transition: all .3s ease;
+  }
+  .cal-item.today {
+    background: linear-gradient(135deg, rgba(255,138,61,0.95), rgba(255,107,107,0.95));
+    color: #fff; box-shadow: 0 8px 22px rgba(255,138,61,0.4);
+  }
+  .cal-date {
+    text-align: center; min-width: 48px;
+    padding: 5px 6px; border-radius: 10px;
+    background: rgba(255,255,255,0.7); color: var(--text-main);
+  }
+  .cal-date .d { font-size: 18px; font-weight: 800; line-height: 1; }
+  .cal-date .m { font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+  .cal-info { flex: 1; }
+  .cal-info .ci-title { font-size: 13px; font-weight: 700; }
+  .cal-info .ci-sub { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+  .cal-badge {
+    font-size: 9px; padding: 3px 8px; border-radius: 999px;
+    background: rgba(255,212,59,0.4); color: #7a4a00; font-weight: 700; white-space: nowrap;
+  }
+  .cal-item.today .cal-badge { background: rgba(255,255,255,0.35); color: #fff; }
+
+  @media (max-width: 1280px) {
+    .dashboard { grid-template-columns: 1fr 1fr; }
+    .widget.daily { grid-row: span 1; grid-column: 1; }
+    .widget.lessons { grid-row: span 1; grid-column: 2; }
+    .widget.food { grid-column: 1; }
+    .widget.calendar { grid-column: 2; }
+  }
+  @media (max-width: 820px) {
+    .dashboard { grid-template-columns: 1fr; }
+    .widget.daily, .widget.lessons, .widget.food, .widget.calendar { grid-column: 1; grid-row: auto; }
+    header.topbar { flex-direction: column; gap: 12px; text-align: center; }
+    .clock { text-align: center; }
+  }
+  .widget { animation: fadeIn 0.8s ease both; }
+  .widget:nth-child(2) { animation-delay: .1s; }
+  .widget:nth-child(3) { animation-delay: .2s; }
+  .widget:nth-child(4) { animation-delay: .3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="bubble" style="width:120px;height:120px;top:10%;left:5%;animation-delay:0s;"></div>
+<div class="bubble" style="width:80px;height:80px;top:60%;left:90%;animation-delay:4s;"></div>
+<div class="bubble" style="width:150px;height:150px;top:75%;left:15%;animation-delay:8s;"></div>
+<div class="bubble" style="width:60px;height:60px;top:25%;left:80%;animation-delay:2s;"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">🐳</div>
+    <div>
+      <h1>Облачный Кит</h1>
+      <p>ДОУ № 2 г. Липецка · 2026–2027 уч. год</p>
+    </div>
+  </div>
+  <div class="clock">
+    <div class="time" id="clock-time">--:--:--</div>
+    <div class="date" id="clock-date">—</div>
+    <div class="season" id="clock-season">—</div>
+  </div>
+</header>
+
+<main class="dashboard">
+  <section class="widget daily">
+    <h2><span class="icon">🕐</span> Режим дня</h2>
+    <div class="tabs" id="day-tabs"></div>
+    <div id="day-content"></div>
+  </section>
+  <section class="widget lessons">
+    <h2><span class="icon">📚</span> Расписание занятий</h2>
+    <div class="tabs" id="lesson-tabs"></div>
+    <div id="lesson-content"></div>
+  </section>
+  <section class="widget food">
+    <h2><span class="icon">🍽️</span> Питание</h2>
+    <div id="food-content"></div>
+  </section>
+  <section class="widget calendar">
+    <h2><span class="icon">🎉</span> События и утренники</h2>
+    <div class="cal-list" id="calendar-content"></div>
+  </section>
+</main>
+
+<script>
+/* =========================================================
+   ДАННЫЕ
+   ========================================================= */
+
+const GROUPS = [
+  { id: 'g1',  name: '1 младшая №1 «Тактоши»',         cat: 'Ясли',         type: 'яс' },
+  { id: 'g2',  name: '2 младшая №1 «Радуга»',           cat: '2 младшая',    type: 'сад' },
+  { id: 'g3',  name: '2 младшая №2 «Знайки»',           cat: '2 младшая',    type: 'сад' },
+  { id: 'g4',  name: '2 младшая №3 «Квантумики»',       cat: '2 младшая',    type: 'сад' },
+  { id: 'g5',  name: 'Средняя №1 «Гагаринцы»',          cat: 'Средняя',      type: 'сад' },
+  { id: 'g6',  name: 'Средняя №2 «Электроники»',        cat: 'Средняя',      type: 'сад' },
+  { id: 'g7',  name: 'Старшая №1 «Флюксики»',           cat: 'Старшая',      type: 'сад' },
+  { id: 'g8',  name: 'Старшая №2 «Эйнштейны»',          cat: 'Старшая',      type: 'сад' },
+  { id: 'g9',  name: 'Старшая №3 «Дарвики»',            cat: 'Старшая',      type: 'сад' },
+  { id: 'g10', name: 'Подготовительная №1 «Смешарики»', cat: 'Подготовительная', type: 'сад' },
+  { id: 'g11', name: 'Подготовительная №2 «ЛГПУши»',    cat: 'Подготовительная', type: 'сад' },
+  { id: 'g12', name: 'Подготовительная №3 «ЛИРОши»',    cat: 'Подготовительная', type: 'сад' },
+  { id: 'g13', name: 'Оздоровительная «Домисолька»',    cat: 'Оздоровительная', type: 'сад' },
+  { id: 'g14', name: 'Логопедическая «ПОЛИтеша»',       cat: 'Логопедическая', type: 'сад' },
+];
+
+function t(h, m) { return h * 60 + m; }
+
+const DAY_REGIMES = {
+  'Ясли': { label: 'Ясли (2–3 года)', moments: [
+    { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,20) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,20),  e: t(9,0) },
+    { n: 'Игры, самостоятельная деятельность', s: t(9,0), e: t(9,40) },
+    { n: 'Занятия по подгруппам',            s: t(9,40),  e: t(10,10) },
+    { n: 'Второй завтрак',                   s: t(10,10), e: t(10,40) },
+    { n: 'Подготовка к прогулке, прогулка',  s: t(10,40), e: t(11,30) },
+    { n: 'Подготовка к обеду, обед',         s: t(11,30), e: t(12,30) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,30), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Занятия по подгруппам',            s: t(16,0),  e: t(16,30) },
+    { n: 'Подготовка к ужину, ужин',         s: t(16,30), e: t(17,0) },
+    { n: 'Прогулка, игры, самостоятельная деятельность', s: t(17,0), e: t(19,0) },
+  ]},
+  '2 младшая': { label: '2 младшая', moments: [
+    { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,30) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,30),  e: t(9,0) },
+    { n: 'Игры, самостоятельная деятельность', s: t(9,0), e: t(9,35) },
+    { n: 'Занятия',                          s: t(9,35),  e: t(10,20) },
+    { n: 'Второй завтрак',                   s: t(10,20), e: t(10,40) },
+    { n: 'Подготовка к прогулке, прогулка',  s: t(10,40), e: t(12,20) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,20), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Игры, самостоятельная деятельность', s: t(16,0), e: t(16,30) },
+    { n: 'Подготовка к ужину, ужин',         s: t(16,30), e: t(17,0) },
+    { n: 'Прогулка, игры, самостоятельная деятельность', s: t(17,0), e: t(19,0) },
+  ]},
+  'Средняя': { label: 'Средняя', moments: [
+    { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,30) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,30),  e: t(9,0) },
+    { n: 'Игры, самостоятельная деятельность', s: t(9,0), e: t(9,30) },
+    { n: 'Занятия',                          s: t(9,30),  e: t(10,20) },
+    { n: 'Второй завтрак',                   s: t(10,30), e: t(10,50) },
+    { n: 'Подготовка к прогулке, прогулка',  s: t(10,50), e: t(12,20) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,20), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Игры, самостоятельная деятельность', s: t(16,0), e: t(16,30) },
+    { n: 'Подготовка к ужину, ужин',         s: t(16,30), e: t(17,0) },
+    { n: 'Прогулка, игры, самостоятельная деятельность', s: t(17,0), e: t(19,0) },
+  ]},
+  'Старшая': { label: 'Старшая', moments: [
+    { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,30) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,30),  e: t(9,0) },
+    { n: 'Занятия',                          s: t(9,0),   e: t(10,0) },
+    { n: 'Игры, самостоятельная деятельность', s: t(10,0), e: t(10,30) },
+    { n: 'Второй завтрак',                   s: t(10,30), e: t(10,50) },
+    { n: 'Подготовка к прогулке, прогулка',  s: t(10,50), e: t(12,20) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,20), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Занятия',                          s: t(16,0),  e: t(16,25) },
+    { n: 'Подготовка к ужину, ужин',         s: t(16,30), e: t(17,0) },
+    { n: 'Прогулка, игры, самостоятельная деятельность', s: t(17,0), e: t(19,0) },
+  ]},
+  'Подготовительная': { label: 'Подготовительная', moments: [
+    { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,30) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,30),  e: t(9,0) },
+    { n: 'Занятия',                          s: t(9,0),   e: t(10,55) },
+    { n: 'Второй завтрак',                   s: t(10,55), e: t(11,15) },
+    { n: 'Подготовка к прогулке, прогулка',  s: t(11,15), e: t(12,30) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,30), e: t(13,0) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(13,0),  e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Игры, самостоятельная деятельность', s: t(16,0), e: t(16,30) },
+    { n: 'Подготовка к ужину, ужин',         s: t(16,30), e: t(17,0) },
+    { n: 'Прогулка, игры, самостоятельная деятельность', s: t(17,0), e: t(19,0) },
+  ]},
+  'Оздоровительная': { label: 'Оздоровительная', moments: [
+    { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,30) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,30),  e: t(9,0) },
+    { n: 'Занятия с учетом возрастных особенностей', s: t(9,0), e: t(10,50) },
+    { n: 'Второй завтрак',                   s: t(10,50), e: t(11,5) },
+    { n: 'Подготовка к прогулке, прогулка',  s: t(11,5),  e: t(12,20) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,20), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Игры, самостоятельная деятельность', s: t(16,0), e: t(16,30) },
+    { n: 'Подготовка к ужину, ужин',         s: t(16,30), e: t(17,0) },
+    { n: 'Прогулка, игры, самостоятельная деятельность', s: t(17,0), e: t(19,0) },
+  ]},
+  'Логопедическая': { label: 'Логопедическая', moments: [
+    { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,30) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,30),  e: t(9,0) },
+    { n: 'Занятия',                          s: t(9,0),   e: t(10,50) },
+    { n: 'Второй завтрак',                   s: t(10,50), e: t(11,10) },
+    { n: 'Подготовка к прогулке, прогулка',  s: t(11,10), e: t(12,30) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,30), e: t(13,0) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(13,0),  e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Игры / коррекционный час',         s: t(16,0),  e: t(16,30) },
+    { n: 'Подготовка к ужину, ужин',         s: t(16,30), e: t(17,0) },
+    { n: 'Прогулка, игры, самостоятельная деятельность', s: t(17,0), e: t(19,0) },
+  ]},
+};
+
+/* sub: 'I' — первая половина дня (до 12:00); 'II' — вторая половина дня (после 12:00) */
+const SCHEDULE = {
+  g1: [
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'II', subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:3, sub:'II', subject:'Познавательное развитие', abbr:'ОД' },
+    { day:3, sub:'II', subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'II', subject:'Познавательное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g2: [
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:3, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g3: [
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g4: [
+    { day:0, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:3, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g5: [
+    { day:0, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g6: [
+    { day:0, sub:'I',  subject:'Познавательное развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g7: [
+    { day:0, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Познавательное развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g8: [
+    { day:0, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g9: [
+    { day:0, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Познавательное развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g10: [
+    { day:0, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Речевое развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Познавательное развитие', abbr:'ОД*', hall:true },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g11: [
+    { day:0, sub:'I',  subject:'Речевое развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Познавательное развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g12: [
+    { day:0, sub:'I',  subject:'Познавательное развитие', abbr:'ОД*', hall:true },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g13: [
+    { day:0, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Познавательное развитие', abbr:'ОД*', hall:true },
+    { day:3, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:0, sub:'II', subject:'Игровая практика', abbr:'ОДРМ' },
+    { day:1, sub:'II', subject:'Продуктивная практика', abbr:'ОДРМ' },
+    { day:2, sub:'II', subject:'Познавательно-исследовательская практика', abbr:'ОДРМ' },
+    { day:3, sub:'II', subject:'Коммуникативная практика', abbr:'ОДРМ' },
+    { day:4, sub:'II', subject:'Чтение художественной литературы', abbr:'ОДРМ' },
+  ],
+  g14: [
+    { day:0, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:0, sub:'II', subject:'Коррекционный час', abbr:'Коррекционный час' },
+    { day:1, sub:'I',  subject:'Познавательное развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'I',  subject:'Речевое развитие', abbr:'ОД' },
+    { day:1, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:1, sub:'II', subject:'Коррекционный час', abbr:'Коррекционный час' },
+    { day:2, sub:'I',  subject:'Речевое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:2, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:2, sub:'II', subject:'Коррекционный час', abbr:'Коррекционный час' },
+    { day:3, sub:'I',  subject:'Познавательное развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД' },
+    { day:3, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:3, sub:'II', subject:'Коррекционный час', abbr:'Коррекционный час' },
+    { day:4, sub:'I',  subject:'Социально-коммуникативное развитие', abbr:'ОД' },
+    { day:4, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'I',  subject:'Физическое развитие', abbr:'ОД*', hall:true },
+    { day:4, sub:'II', subject:'Коррекционный час', abbr:'Коррекционный час' },
+  ],
+};
+
+const MENU_TODAY = 9;
+
+const MENU_YASLI = {
+  9: {
+    'Завтрак': { time: '08:30', items: [
+      { n:'Батон йодированный с сыром', w:'30/10 г' },
+      { n:'Суп молочный с макаронными изделиями', w:'150 г' },
+      { n:'Чай с сахаром и лимоном', w:'150/8/5 г' },
+    ]},
+    '2-й завтрак': { time: '10:10', items: [{ n:'Апельсины', w:'80 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n:'Огурцы свежие', w:'40 г' },
+      { n:'Суп картофельный с макаронными изделиями и зеленью', w:'150/1 г' },
+      { n:'Котлета мясная', w:'60 г' },
+      { n:'Пюре картофельное', w:'100 г' },
+      { n:'Напиток из плодов шиповника', w:'150 г' },
+      { n:'Хлеб ржано-пшеничный', w:'45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n:'Кефир 3.2%', w:'160 г' },
+      { n:'Печенье овсяное', w:'35 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n:'Омлет натуральный', w:'80/3 г' },
+      { n:'Винегрет овощной', w:'60 г' },
+      { n:'Чай с сахаром', w:'150/7 г' },
+      { n:'Батон йодированный', w:'30 г' },
+    ]},
+  }
+};
+
+const MENU_SAD = {
+  1: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Каша манная с маслом и сахаром', w: '200 г' },
+      { n: 'Бутерброд с маслом', w: '30/3 г' },
+      { n: 'Кофейный напиток с молоком', w: '150 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Сок', w: '150 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Икра кабачковая', w: '40 г' },
+      { n: 'Суп лапша домашняя с зеленью', w: '150/1 г' },
+      { n: 'Плов из отварной птицы', w: '35/100 г' },
+      { n: 'Компот из свежих фруктов', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Кефир', w: '160 г' },
+      { n: 'Сушки', w: '20 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Рыба, запеченная в омлете', w: '80 г' },
+      { n: 'Картофель отварной с маслом', w: '100 г' },
+      { n: 'Чай с сахаром и лимоном', w: '150/8/5 г' },
+      { n: 'Батон йодированный', w: '30 г' },
+    ]},
+  },
+  2: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Каша гречневая с маслом и сахаром', w: '200 г' },
+      { n: 'Печенье к чаю', w: '35 г' },
+      { n: 'Чай с сахаром', w: '150/7 г' },
+      { n: 'Яйцо вареное', w: '20 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Кисель из сока', w: '150 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Свекла отварная кусочком', w: '60 г' },
+      { n: 'Суп картофельный с бобовыми, гренками и зеленью', w: '150/10/1 г' },
+      { n: 'Биточки мясные', w: '60 г' },
+      { n: 'Пюре картофельное', w: '100 г' },
+      { n: 'Компот из сухофруктов', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Ряженка 4%', w: '160 г' },
+      { n: 'Булочка ванильная', w: '60 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Запеканка из творога с морковью', w: '100 г' },
+      { n: 'Какао с молоком', w: '150 г' },
+      { n: 'Соус молочный сладкий', w: '30 г' },
+    ]},
+  },
+  3: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Вафли', w: '25 г' },
+      { n: 'Каша пшеная с маслом и сахаром', w: '158 г' },
+      { n: 'Чай с сахаром и лимоном', w: '150/7/5 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Яблоки свежие', w: '100 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Салат из свеклы', w: '60 г' },
+      { n: 'Щи из свежей капусты с картофелем, сметаной и зеленью', w: '150/3/1 г' },
+      { n: 'Жаркое по-домашнему', w: '35/100 г' },
+      { n: 'Сок яблочный', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Молоко кипяченое', w: '160 г' },
+      { n: 'Пряники', w: '35 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Ватрушка из творога', w: '100 г' },
+      { n: 'Салат из моркови с яблоками', w: '75 г' },
+      { n: 'Чай с сахаром', w: '150/7 г' },
+    ]},
+  },
+  4: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Батон йодированный с сыром', w: '30/10 г' },
+      { n: 'Омлет натуральный с маслом', w: '80/5 г' },
+      { n: 'Чай с сахаром и лимоном', w: '150/8/7 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Яблоки свежие', w: '90 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Помидоры свежие', w: '40 г' },
+      { n: 'Суп картофельный с крупой и зеленью', w: '150/1 г' },
+      { n: 'Тефтели мясные в томатном соусе', w: '60/30 г' },
+      { n: 'Пюре картофельное', w: '100 г' },
+      { n: 'Компот из сухофруктов', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Кефир 3.2%', w: '150 г' },
+      { n: 'Печенье', w: '25 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Тефтели рыбные в соусе', w: '60/30 г' },
+      { n: 'Капуста тушеная', w: '75 г' },
+      { n: 'Чай с сахаром', w: '150/7 г' },
+      { n: 'Батон йодированный', w: '30 г' },
+    ]},
+  },
+  5: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Пряник', w: '35 г' },
+      { n: 'Суп молочный рисовый', w: '150 г' },
+      { n: 'Какао с молоком', w: '150 г' },
+      { n: 'Яйцо отварное', w: '20 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Сок', w: '150 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Салат из белокочанной капусты', w: '60 г' },
+      { n: 'Борщ с картофелем, сметаной и зеленью', w: '150/3/1 г' },
+      { n: 'Биточки рубленые из птицы / Соус сметанный', w: '60/30 г' },
+      { n: 'Макароны отварные', w: '100 г' },
+      { n: 'Напиток из плодов шиповника', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Йогурт 2.5%', w: '160 г' },
+      { n: 'Булочка школьная', w: '60 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Пудинг из творога с рисом / молоко сгущенное', w: '75/20 г' },
+      { n: 'Салат из моркови', w: '75 г' },
+      { n: 'Чай с сахаром', w: '150/7 г' },
+    ]},
+  },
+  6: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Печенье к чаю', w: '35 г' },
+      { n: 'Макароны отварные с маслом', w: '100 г' },
+      { n: 'Чай с сахаром', w: '150/7 г' },
+      { n: 'Яйцо вареное', w: '20 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Сок', w: '150 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Салат из белокочанной капусты', w: '60 г' },
+      { n: 'Суп с рыбными консервами и зеленью', w: '200/1 г' },
+      { n: 'Шницель мясной', w: '60 г' },
+      { n: 'Пюре картофельное', w: '100 г' },
+      { n: 'Компот из сухофруктов', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Ряженка 4%', w: '160 г' },
+      { n: 'Сушки', w: '30 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Голубцы ленивые с мясом', w: '100 г' },
+      { n: 'Соус сметанный', w: '50 г' },
+      { n: 'Какао с молоком', w: '150 г' },
+      { n: 'Батон йодированный', w: '30 г' },
+    ]},
+  },
+  7: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Бутерброд с маслом', w: '30/3 г' },
+      { n: 'Каша геркулесовая с маслом и сахаром', w: '158 г' },
+      { n: 'Кофейный напиток с молоком сгущенным', w: '150 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Кисель из сока', w: '150 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Икра кабачковая', w: '40 г' },
+      { n: 'Суп рассольник на к/б со сметаной и зеленью', w: '150/3/1 г' },
+      { n: 'Суфле куриное', w: '55 г' },
+      { n: 'Рис отварной', w: '100 г' },
+      { n: 'Компот из свежих фруктов', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Кефир 3.2%', w: '160 г' },
+      { n: 'Сухарик сдобный', w: '30 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Биточки рыбные с овощами запеченные', w: '80 г' },
+      { n: 'Картофель отварной', w: '100 г' },
+      { n: 'Чай с сахаром и лимоном', w: '150/8/5 г' },
+      { n: 'Батон йодированный', w: '30 г' },
+    ]},
+  },
+  8: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Бутерброд с маслом', w: '30/3 г' },
+      { n: 'Каша молочная «Дружба»', w: '158 г' },
+      { n: 'Чай с сахаром и лимоном', w: '150/8/5 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Яблоки свежие', w: '100 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Свекла отварная кусочком', w: '60 г' },
+      { n: 'Суп из овощей со сметаной и зеленью', w: '150/3/1 г' },
+      { n: 'Бефстроганов из отварного мяса', w: '70 г' },
+      { n: 'Макароны отварные', w: '100 г' },
+      { n: 'Сок яблочный', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Молоко кипяченое', w: '160 г' },
+      { n: 'Пряник', w: '35 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Ватрушка из творога', w: '100 г' },
+      { n: 'Салат из моркови с яблоками', w: '75 г' },
+      { n: 'Чай с повидлом', w: '150 г' },
+    ]},
+  },
+  9: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Батон йодированный с сыром', w: '30/10 г' },
+      { n: 'Суп молочный с макаронными изделиями', w: '150 г' },
+      { n: 'Чай с сахаром и лимоном', w: '150/8/5 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Апельсины', w: '80 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Огурцы свежие', w: '40 г' },
+      { n: 'Суп картофельный с макаронными изделиями и зеленью', w: '150/1 г' },
+      { n: 'Котлета мясная', w: '60 г' },
+      { n: 'Пюре картофельное', w: '100 г' },
+      { n: 'Напиток из плодов шиповника', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Кефир 3.2%', w: '160 г' },
+      { n: 'Печенье овсяное', w: '35 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Омлет натуральный', w: '80/3 г' },
+      { n: 'Винегрет овощной', w: '60 г' },
+      { n: 'Чай с сахаром', w: '150/7 г' },
+      { n: 'Батон йодированный', w: '30 г' },
+    ]},
+  },
+  10: {
+    'Завтрак': { time: '08:30', items: [
+      { n: 'Бутерброд с маслом', w: '30/3 г' },
+      { n: 'Каша манная с маслом и сахаром', w: '158 г' },
+      { n: 'Кофейный напиток с молоком', w: '150 г' },
+    ]},
+    '2-й завтрак': { time: '10:30', items: [{ n: 'Сок', w: '150 г' }] },
+    'Обед': { time: '12:30', items: [
+      { n: 'Салат из белокочанной капусты', w: '60 г' },
+      { n: 'Щи из свежей капусты с картофелем, сметаной и зеленью', w: '150/3/1 г' },
+      { n: 'Печень тушенная в сметанном соусе', w: '70 г' },
+      { n: 'Рис отварной', w: '100 г' },
+      { n: 'Компот из кураги', w: '150 г' },
+      { n: 'Хлеб ржано-пшеничный', w: '45 г' },
+    ]},
+    'Полдник': { time: '15:30', items: [
+      { n: 'Йогурт 2.5%', w: '160 г' },
+      { n: 'Булочка школьная', w: '50 г' },
+    ]},
+    'Ужин': { time: '16:30', items: [
+      { n: 'Пудинг из творога с яблоками', w: '75 г' },
+      { n: 'Салат из моркови', w: '75 г' },
+      { n: 'Чай с сахаром', w: '150/7 г' },
+    ]},
+  },
+};
+
+const FOOD_SCHEDULE = {
+  'g1':  { 'Завтрак':'08:08', '2-й завтрак':'10:10', 'Обед':'11:35', 'Полдник':'15:20', 'Ужин':'16:04' },
+  'g2':  { 'Завтрак':'08:11', '2-й завтрак':'10:12', 'Обед':'12:00', 'Полдник':'15:21', 'Ужин':'16:06' },
+  'g3':  { 'Завтрак':'08:13', '2-й завтрак':'10:14', 'Обед':'12:03', 'Полдник':'15:22', 'Ужин':'16:08' },
+  'g4':  { 'Завтрак':'08:15', '2-й завтрак':'10:16', 'Обед':'12:06', 'Полдник':'15:23', 'Ужин':'16:10' },
+  'g13': { 'Завтрак':'08:17', '2-й завтрак':'10:18', 'Обед':'12:09', 'Полдник':'15:24', 'Ужин':'16:12' },
+  'g5':  { 'Завтрак':'08:19', '2-й завтрак':'10:20', 'Обед':'12:12', 'Полдник':'15:25', 'Ужин':'16:14' },
+  'g6':  { 'Завтрак':'08:21', '2-й завтрак':'10:22', 'Обед':'12:15', 'Полдник':'15:26', 'Ужин':'16:16' },
+  'g7':  { 'Завтрак':'08:23', '2-й завтрак':'10:24', 'Обед':'12:18', 'Полдник':'15:27', 'Ужин':'16:18' },
+  'g8':  { 'Завтрак':'08:25', '2-й завтрак':'10:26', 'Обед':'12:21', 'Полдник':'15:28', 'Ужин':'16:20' },
+  'g9':  { 'Завтрак':'08:27', '2-й завтрак':'10:28', 'Обед':'12:24', 'Полдник':'15:29', 'Ужин':'16:22' },
+  'g14': { 'Завтрак':'08:29', '2-й завтрак':'10:30', 'Обед':'12:27', 'Полдник':'15:30', 'Ужин':'16:24' },
+  'g10': { 'Завтрак':'08:31', '2-й завтрак':'10:32', 'Обед':'12:30', 'Полдник':'15:31', 'Ужин':'16:26' },
+  'g11': { 'Завтрак':'08:33', '2-й завтрак':'10:34', 'Обед':'12:33', 'Полдник':'15:32', 'Ужин':'16:28' },
+  'g12': { 'Завтрак':'08:35', '2-й завтрак':'10:36', 'Обед':'12:36', 'Полдник':'15:33', 'Ужин':'16:30' },
+};
+
+const EVENTS = [
+  { date:'2026-10-20', time:'09:00', title:'Вторая младшая №1 «Радуга»',         sub:'Тарасова Т.Ш., Марьина Л.В. · Гончарова Н.А.' },
+  { date:'2026-10-21', time:'09:00', title:'Первая младшая №1 «Тактоши»',        sub:'Синькова Т.М., Сошнина Е.С. · Сундукова М.С.', badge:'Тематический день' },
+  { date:'2026-10-21', time:'10:00', title:'Вторая младшая №3 «Квантумики»',     sub:'Сафронова Е.Н., Грушевая А.С. · Сундукова М.С.' },
+  { date:'2026-10-22', time:'09:00', title:'Вторая младшая №2 «Знайки»',         sub:'Стрыгина В.В., Юрченко Д.Ю. · Гончарова Н.А.' },
+  { date:'2026-10-22', time:'10:00', title:'Старшая №1 «Флюксики»',              sub:'Литвинова М.М., Букреева Р.А. · Гончарова Н.А.' },
+  { date:'2026-10-23', time:'09:00', title:'Средняя №2 «Электроники»',           sub:'Жданова С.Н., Пашенцева О.П. · Сундукова М.С.' },
+  { date:'2026-10-23', time:'10:00', title:'Средняя №1 «Гагаринцы»',             sub:'Маркина Е.А., Копцева Е.Ю. · Сундукова М.С.' },
+  { date:'2026-10-27', time:'09:00', title:'Старшая №3 «Дарвики»',               sub:'Неклюдова А.А., Боева О.И. · Гончарова Н.А.' },
+  { date:'2026-10-27', time:'10:00', title:'Логопедическая «ПОЛИтеша»',          sub:'Сарина В.И., Акимова Е.П. · Гончарова Н.А.' },
+  { date:'2026-10-28', time:'09:00', title:'Старшая №2 «Эйнштейны»',             sub:'Лубышева Е.В., Большова В.А. · Сундукова М.С.' },
+  { date:'2026-10-28', time:'10:00', title:'Оздоровительная «Домисолька»',       sub:'Нестерова Т.А., Чурилова О.И. · Сундукова М.С.', badge:'Тематический день' },
+  { date:'2026-10-29', time:'09:00', title:'Подготовительная №3 «Лироши»',       sub:'Чурикова Е.А., Клипа Н.А. · Гончарова Н.А.' },
+  { date:'2026-10-29', time:'10:00', title:'Подготовительная №2 «ЛГПУши»',       sub:'Гулиева Н.Г., Панова Г.И. · Гончарова Н.А.' },
+  { date:'2026-10-30', time:'09:00', title:'Подготовительная №1 «Смешарики»',    sub:'Кунова С.В., Абрамова А.Е. · Сундукова М.С.' },
+];
+
+/* =========================================================
+   ЛОГИКА
+   ========================================================= */
+
+const MONTHS_RU = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MONTHS_SHORT_RU = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const WEEKDAYS_RU = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+
+function getMoscowNow() {
+  const now = new Date();
+  const fmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Moscow',
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+  });
+  const parts = {};
+  fmt.formatToParts(now).forEach(p => parts[p.type] = p.value);
+  return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`);
+}
+function pad(n){ return n < 10 ? '0'+n : ''+n; }
+function minutesOfDay(d){ return d.getHours()*60 + d.getMinutes(); }
+function isWorkTime(now) {
+  const day = now.getDay();
+  if (day === 0 || day === 6) return false;
+  const m = minutesOfDay(now);
+  return m >= t(7,0) && m < t(19,0);
+}
+function isSummerSeason(now) {
+  const mo = now.getMonth() + 1;
+  return mo >= 6 && mo <= 8;
+}
+function getHalfOfDay(now) {
+  const curMin = minutesOfDay(now);
+  return curMin < t(12, 0) ? 'I' : 'II';
+}
+function halfOfDayLabel(half) {
+  return half === 'I' ? 'I половина дня' : 'II половина дня';
+}
+
+function renderClock() {
+  const now = getMoscowNow();
+  document.getElementById('clock-time').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById('clock-date').textContent =
+    `${WEEKDAYS_RU[now.getDay()]}, ${now.getDate()} ${MONTHS_RU[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('clock-season').textContent =
+    isSummerSeason(now) ? 'Летний режим (Июнь-Август)' : 'Учебный режим (Сентябрь-Май)';
+}
+
+let activeDayTab = 'Ясли';
+function renderDayTabs() {
+  const cats = ['Ясли','2 младшая','Средняя','Старшая','Подготовительная','Оздоровительная','Логопедическая'];
+  const el = document.getElementById('day-tabs');
+  el.innerHTML = cats.map(c =>
+    `<button class="tab ${c===activeDayTab?'active':''}" data-cat="${c}">${DAY_REGIMES[c].label}</button>`
+  ).join('');
+  el.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+    activeDayTab = b.dataset.cat;
+    renderDayTabs(); renderDay();
+  });
+}
+function renderDay() {
+  const el = document.getElementById('day-content');
+  const now = getMoscowNow();
+  if (!isWorkTime(now)) {
+    el.innerHTML = `<div class="waiting"><div><div class="big">🌙</div>Ждем когда снова встретимся</div></div>`;
+    return;
+  }
+  const regime = DAY_REGIMES[activeDayTab];
+  const curMin = minutesOfDay(now);
+  let html = '<div class="day-list">';
+  regime.moments.forEach(m => {
+    const active = curMin >= m.s && curMin < m.e;
+    const progress = active ? Math.round(((curMin - m.s) / (m.e - m.s)) * 100) : 0;
+    const t1 = `${pad(Math.floor(m.s/60))}:${pad(m.s%60)}`;
+    const t2 = `${pad(Math.floor(m.e/60))}:${pad(m.e%60)}`;
+    html += `<div class="moment ${active?'active':''}">
+      <div class="m-time">${t1}–${t2}</div>
+      <div class="m-name">${m.n}</div>
+      ${active ? `<div class="m-progress"><div style="width:${progress}%"></div></div>` : ''}
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+let activeLessonGroup = 'g1';
+function renderLessonTabs() {
+  const el = document.getElementById('lesson-tabs');
+  el.innerHTML = GROUPS.map(g =>
+    `<button class="tab ${g.id===activeLessonGroup?'active':''}" data-g="${g.id}">${g.name}</button>`
+  ).join('');
+  el.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+    activeLessonGroup = b.dataset.g;
+    renderLessonTabs(); renderLesson();
+  });
+}
+function renderLesson() {
+  const el = document.getElementById('lesson-content');
+  const now = getMoscowNow();
+  if (!isWorkTime(now)) {
+    el.innerHTML = `<div class="waiting"><div><div class="big">🌙</div>Ждем когда снова встретимся</div></div>`;
+    return;
+  }
+  const dayIdx = now.getDay();
+  if (dayIdx === 0 || dayIdx === 6) {
+    el.innerHTML = `<div class="waiting"><div><div class="big">🌞</div>Выходной — занимаемся интересными делами</div></div>`;
+    return;
+  }
+  const scheduleDay = dayIdx - 1;
+  const half = getHalfOfDay(now);
+  const todayLessons = (SCHEDULE[activeLessonGroup] || []).filter(l => l.day === scheduleDay);
+  let display = todayLessons.filter(l => l.sub === half);
+  if (activeLessonGroup === 'g14') {
+    if (half === 'I') {
+      display = todayLessons.filter(l => l.sub === 'I' && l.abbr !== 'Коррекционный час');
+    } else {
+      display = todayLessons.filter(l => l.sub === 'II');
+    }
+  }
+  if (display.length === 0) {
+    el.innerHTML = `<div class="waiting"><div><div class="big">🎨</div>Занимаемся интересными делами</div></div>`;
+    return;
+  }
+  let html = `
+    <div class="half-badge">
+      <span class="hb-icon">${half === 'I' ? '🌅' : '🌇'}</span>
+      <span class="hb-text">Сейчас идёт: ${halfOfDayLabel(half)}</span>
+    </div>
+  `;
+  display.forEach(l => {
+    let badgeCls = 'od';
+    if (l.abbr === 'ОДРМ') badgeCls = 'odrm';
+    else if (l.abbr === 'ОД*') badgeCls = 'hall';
+    else if (l.abbr.includes('Коррекц')) badgeCls = 'corr';
+    const isCorr = l.abbr.includes('Коррекц');
+    const titleText = isCorr ? 'Коррекционная работа'
+      : (l.abbr === 'ОДРМ' ? 'Культурная практика' : 'Образовательная деятельность');
+    html += `<div class="lesson-card" style="border-left-color:${getSubjectColor(l.subject)}">
+      <div class="l-area">${l.subject}</div>
+      <div class="l-title">${titleText}</div>
+      <div class="l-meta">
+        <span class="badge ${badgeCls}">${l.abbr}</span>
+        <span class="badge">${halfOfDayLabel(l.sub)}</span>
+        ${l.hall ? '<span class="badge hall">🏛 В зале</span>' : ''}
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+function getSubjectColor(subj) {
+  if (subj.includes('Социально')) return '#4dabf7';
+  if (subj.includes('Познавательное')) return '#51cf66';
+  if (subj.includes('Речевое')) return '#ff8a3d';
+  if (subj.includes('Художественно')) return '#cc5de8';
+  if (subj.includes('Физическое')) return '#ff6b6b';
+  if (subj.includes('Игровая')) return '#ffd43b';
+  if (subj.includes('Продуктивная')) return '#ff922b';
+  if (subj.includes('Познавательно-исслед')) return '#20c997';
+  if (subj.includes('Коммуникативная')) return '#845ef7';
+  if (subj.includes('Чтение')) return '#f06595';
+  if (subj.includes('Коррекц')) return '#c92a2a';
+  return '#4dabf7';
+}
+
+function renderFood() {
+  const el = document.getElementById('food-content');
+  const now = getMoscowNow();
+  if (!isWorkTime(now)) {
+    el.innerHTML = `<div class="waiting"><div><div class="big">🍽️</div>Ждем когда снова встретимся</div></div>`;
+    return;
+  }
+  const curMin = minutesOfDay(now);
+  const meals = [
+    { key:'Завтрак',     s:t(8,30),  e:t(9,0) },
+    { key:'2-й завтрак', s:t(10,10), e:t(10,40) },
+    { key:'Обед',        s:t(12,20), e:t(13,0) },
+    { key:'Полдник',     s:t(15,30), e:t(16,0) },
+    { key:'Ужин',        s:t(16,30), e:t(17,0) },
+  ];
+  let current = meals.find(m => curMin >= m.s && curMin < m.e);
+  if (!current) current = meals.find(m => curMin < m.s) || meals[meals.length-1];
+
+  const menuYas = MENU_YASLI[MENU_TODAY][current.key];
+  const menuSad = MENU_SAD[MENU_TODAY][current.key];
+
+  el.innerHTML = `
+    <div class="food-header">
+      <div class="f-name">🍴 ${current.key}</div>
+      <div class="f-time">${menuSad.time}</div>
+    </div>
+    <div class="food-subtitle">Ясли (2–3 года)</div>
+    <div class="food-items">${menuYas.items.map(i => `
+      <div class="food-item"><span class="fi-name">${i.n}</span><span class="fi-weight">${i.w}</span></div>
+    `).join('')}</div>
+    <div class="food-subtitle">Сад (3–7 лет)</div>
+    <div class="food-items">${menuSad.items.map(i => `
+      <div class="food-item"><span class="fi-name">${i.n}</span><span class="fi-weight">${i.w}</span></div>
+    `).join('')}</div>
+    <div style="margin-top:10px;font-size:10.5px;color:var(--text-muted);text-align:center;">
+      🕒 Выдача: ${FOOD_SCHEDULE['g1'][current.key]} — ${FOOD_SCHEDULE['g12'][current.key]} (по графику групп)
+    </div>
+  `;
+}
+
+function renderCalendar() {
+  const el = document.getElementById('calendar-content');
+  const now = getMoscowNow();
+  const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  let html = '';
+  EVENTS.forEach(ev => {
+    const d = new Date(ev.date + 'T00:00:00');
+    const isToday = ev.date === todayStr;
+    const day = d.getDate();
+    const mon = MONTHS_SHORT_RU[d.getMonth()];
+    html += `<div class="cal-item ${isToday?'today':''}">
+      <div class="cal-date"><div class="d">${day}</div><div class="m">${mon}</div></div>
+      <div class="cal-info">
+        <div class="ci-title">${ev.time} · ${ev.title}</div>
+        <div class="ci-sub">${ev.sub}</div>
+      </div>
+      ${ev.badge ? `<span class="cal-badge">${ev.badge}</span>` : ''}
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function updateAll() {
+  renderClock();
+  renderDay();
+  renderLesson();
+  renderFood();
+  renderCalendar();
+}
+renderDayTabs();
+renderLessonTabs();
+updateAll();
+setInterval(renderClock, 1000);
+setInterval(() => { renderDay(); renderLesson(); renderFood(); renderCalendar(); }, 30000);
+setTimeout(updateAll, 100);
+</script>
+</body>
+</html>
