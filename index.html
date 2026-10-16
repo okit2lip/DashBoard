@@ -12,10 +12,14 @@
     --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
     --text-main: #1a2340;
     --text-muted: #5a6684;
-    --radius: 22px;
-    --radius-sm: 14px;
+    --radius: clamp(14px, 1.4vw, 26px);
+    --radius-sm: clamp(9px, 0.9vw, 16px);
+    --gap: clamp(10px, 1.2vw, 22px);
+    --pad-x: clamp(12px, 1.4vw, 28px);
+    --pad-y: clamp(10px, 1.2vw, 24px);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: clamp(12px, 0.9vw, 18px); }
   html, body {
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -40,54 +44,53 @@
     background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.1));
     filter: blur(2px); z-index: -1;
     animation: floatUp 18s ease-in-out infinite; pointer-events: none;
+    aspect-ratio: 1;
   }
   @keyframes floatUp { 0%,100% { transform: translateY(0) scale(1); opacity: 0.5; } 50% { transform: translateY(-40px) scale(1.1); opacity: 0.8; } }
 
   header.topbar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 32px; margin: 18px 22px 0;
+    padding: var(--pad-y) var(--pad-x);
+    margin: clamp(8px, 1vw, 20px) clamp(10px, 1.2vw, 24px) 0;
     background: var(--glass-bg-strong);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius); box-shadow: var(--glass-shadow);
+    gap: clamp(8px, 1vw, 20px);
   }
- .brand .logo {
-  width: 90px;
-  height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: visible;   /* НЕ обрезать */
-}
-.brand .logo img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 3px 6px rgba(31,38,135,0.18));
-}
-  .brand h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
-  .brand p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .brand { display: flex; align-items: center; gap: clamp(8px, 0.9vw, 16px); }
+  .brand .logo {
+    width: clamp(36px, 3vw, 64px);
+    height: clamp(36px, 3vw, 64px);
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4dabf7, #cc5de8);
+    display: grid; place-items: center;
+    font-size: clamp(18px, 1.6vw, 32px);
+    box-shadow: 0 6px 18px rgba(77,171,247,0.4);
+    flex-shrink: 0;
+  }
+  .brand h1 { font-size: clamp(16px, 1.4vw, 28px); font-weight: 700; letter-spacing: -0.3px; }
+  .brand p { font-size: clamp(10px, 0.85vw, 15px); color: var(--text-muted); margin-top: 2px; }
   .clock { text-align: right; }
   .clock .time {
-    font-size: 34px; font-weight: 800; letter-spacing: -1px;
+    font-size: clamp(22px, 2.4vw, 48px); font-weight: 800; letter-spacing: -1px;
     background: linear-gradient(135deg, #4dabf7, #cc5de8);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent; font-variant-numeric: tabular-nums;
   }
-  .clock .date { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+  .clock .date { font-size: clamp(10px, 0.9vw, 16px); color: var(--text-muted); margin-top: 2px; }
   .clock .season {
-    display: inline-block; margin-top: 4px; font-size: 11px;
+    display: inline-block; margin-top: 4px; font-size: clamp(9px, 0.7vw, 13px);
     padding: 3px 10px; border-radius: 999px;
     background: rgba(77,171,247,0.15); color: #1864ab; font-weight: 600;
   }
   .dashboard {
     display: grid; grid-template-columns: 1.25fr 1.25fr 1fr;
-    grid-template-rows: auto auto; gap: 18px;
-    padding: 18px 22px 26px; min-height: calc(100vh - 110px);
+    grid-template-rows: auto auto; gap: var(--gap);
+    padding: var(--gap) var(--pad-x) clamp(14px, 1.6vw, 30px);
+    min-height: calc(100dvh - clamp(70px, 8vh, 140px));
+    max-width: 2560px; margin: 0 auto;
   }
   .widget {
     background: var(--glass-bg);
@@ -95,7 +98,7 @@
     -webkit-backdrop-filter: blur(22px) saturate(160%);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius); box-shadow: var(--glass-shadow);
-    padding: 20px 22px; display: flex; flex-direction: column;
+    padding: var(--pad-y) var(--pad-x); display: flex; flex-direction: column;
     overflow: hidden; position: relative;
   }
   .widget::after {
@@ -103,19 +106,19 @@
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
   }
   .widget h2 {
-    font-size: 15px; font-weight: 700; color: var(--text-muted);
+    font-size: clamp(11px, 0.9vw, 18px); font-weight: 700; color: var(--text-muted);
     text-transform: uppercase; letter-spacing: 1.2px;
-    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px; margin-bottom: clamp(8px, 0.9vw, 16px);
   }
-  .widget h2 .icon { font-size: 20px; }
+  .widget h2 .icon { font-size: clamp(15px, 1.2vw, 24px); }
   .widget.daily { grid-row: span 2; grid-column: 1; }
   .widget.lessons { grid-row: span 2; grid-column: 2; }
   .widget.food { grid-column: 3; }
   .widget.calendar { grid-column: 3; }
 
-  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: clamp(8px, 0.9vw, 14px); }
   .tab {
-    font-size: 11px; padding: 6px 11px; border-radius: 999px;
+    font-size: clamp(9px, 0.7vw, 13px); padding: 6px 11px; border-radius: 999px;
     background: rgba(255,255,255,0.5);
     border: 1px solid rgba(255,255,255,0.6);
     color: var(--text-muted); cursor: pointer;
@@ -132,18 +135,19 @@
   .day-list::-webkit-scrollbar { width: 5px; }
   .day-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
   .moment {
-    display: flex; align-items: center; gap: 12px;
-    padding: 9px 12px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; gap: clamp(6px, 0.8vw, 14px);
+    padding: clamp(6px, 0.7vw, 14px) clamp(8px, 0.9vw, 16px);
+    border-radius: var(--radius-sm);
     background: rgba(255,255,255,0.4);
     border: 1px solid rgba(255,255,255,0.5);
-    transition: all .3s ease; font-size: 13px;
+    transition: all .3s ease; font-size: clamp(11px, 0.85vw, 16px);
   }
   .moment.active {
     background: linear-gradient(135deg, rgba(77,171,247,0.95), rgba(204,93,232,0.95));
     color: #fff; transform: scale(1.02);
     box-shadow: 0 8px 22px rgba(77,171,247,0.45);
   }
-  .moment .m-time { font-weight: 700; font-size: 12px; white-space: nowrap; min-width: 92px; font-variant-numeric: tabular-nums; }
+  .moment .m-time { font-weight: 700; font-size: clamp(9px, 0.75vw, 14px); white-space: nowrap; min-width: 92px; font-variant-numeric: tabular-nums; }
   .moment .m-name { flex: 1; font-weight: 500; }
   .moment .m-progress { width: 80px; height: 6px; border-radius: 4px; background: rgba(255,255,255,0.35); overflow: hidden; }
   .moment .m-progress > div { height: 100%; background: #fff; border-radius: 4px; transition: width 1s linear; }
@@ -152,34 +156,38 @@
   .waiting {
     display: grid; place-items: center; flex: 1;
     text-align: center; color: var(--text-muted);
-    font-size: 16px; font-weight: 600; padding: 30px 10px;
+    font-size: clamp(12px, 1vw, 18px); font-weight: 600; padding: 30px 10px;
   }
-  .waiting .big { font-size: 46px; margin-bottom: 12px; }
+  .waiting .big { font-size: clamp(28px, 2.8vw, 56px); margin-bottom: 12px; }
 
   .half-badge {
     display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px; padding: 8px 12px; border-radius: 12px;
+    margin-bottom: clamp(6px, 0.7vw, 12px);
+    padding: clamp(5px, 0.6vw, 12px) clamp(8px, 0.9vw, 16px);
+    border-radius: clamp(8px, 0.8vw, 14px);
     background: linear-gradient(135deg, rgba(77,171,247,0.15), rgba(204,93,232,0.15));
     border: 1px solid rgba(255,255,255,0.5);
   }
-  .half-badge .hb-icon { font-size: 18px; }
+  .half-badge .hb-icon { font-size: clamp(13px, 1.1vw, 22px); }
   .half-badge .hb-text {
-    font-size: 12px; font-weight: 700; color: var(--text-muted);
+    font-size: clamp(9px, 0.75vw, 14px); font-weight: 700; color: var(--text-muted);
     text-transform: uppercase; letter-spacing: 0.6px;
   }
   .lesson-card {
     background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6));
-    border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px;
+    border-radius: var(--radius-sm);
+    padding: clamp(10px, 1vw, 20px) clamp(12px, 1.1vw, 22px);
+    margin-bottom: clamp(6px, 0.7vw, 12px);
     border-left: 5px solid #4dabf7; box-shadow: 0 4px 14px rgba(0,0,0,0.05);
   }
   .lesson-card .l-area {
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    font-size: clamp(9px, 0.7vw, 13px); font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 4px;
   }
-  .lesson-card .l-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .lesson-card .l-title { font-size: clamp(12px, 1.1vw, 20px); font-weight: 700; margin-bottom: 6px; }
   .lesson-card .l-meta { display: flex; gap: 8px; flex-wrap: wrap; }
   .badge {
-    font-size: 10px; font-weight: 700; padding: 3px 9px;
+    font-size: clamp(8px, 0.65vw, 12px); font-weight: 700; padding: 3px 9px;
     border-radius: 999px; background: rgba(77,171,247,0.15);
     color: #1864ab; letter-spacing: 0.5px;
   }
@@ -190,29 +198,31 @@
 
   .food-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, #ffd8a8, #ffec99); margin-bottom: 12px;
+    padding: clamp(6px, 0.8vw, 14px) clamp(10px, 1.1vw, 18px);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, #ffd8a8, #ffec99); margin-bottom: clamp(8px, 0.9vw, 14px);
   }
-  .food-header .f-name { font-weight: 800; font-size: 16px; color: #7a4a00; }
-  .food-header .f-time { font-size: 13px; color: #7a4a00; font-weight: 600; }
+  .food-header .f-name { font-weight: 800; font-size: clamp(12px, 1.1vw, 20px); color: #7a4a00; }
+  .food-header .f-time { font-size: clamp(10px, 0.85vw, 16px); color: #7a4a00; font-weight: 600; }
   .food-items { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 170px; }
   .food-item {
     display: flex; justify-content: space-between; align-items: center;
-    font-size: 12.5px; padding: 7px 10px;
+    font-size: clamp(10px, 0.8vw, 15px); padding: 7px 10px;
     background: rgba(255,255,255,0.5);
     border-radius: 10px; border: 1px solid rgba(255,255,255,0.6);
   }
   .food-item .fi-name { font-weight: 500; }
-  .food-item .fi-weight { color: var(--text-muted); font-size: 11px; font-weight: 600; white-space: nowrap; margin-left: 8px; }
+  .food-item .fi-weight { color: var(--text-muted); font-size: clamp(9px, 0.7vw, 13px); font-weight: 600; white-space: nowrap; margin-left: 8px; }
   .food-subtitle {
-    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    font-size: clamp(9px, 0.7vw, 13px); font-weight: 700; color: var(--text-muted);
     margin: 8px 0 4px; text-transform: uppercase; letter-spacing: 0.5px;
   }
 
   .cal-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 260px; padding-right: 4px; }
   .cal-item {
-    display: flex; gap: 12px; align-items: center;
-    padding: 9px 12px; border-radius: var(--radius-sm);
+    display: flex; gap: clamp(6px, 0.8vw, 14px); align-items: center;
+    padding: clamp(6px, 0.7vw, 12px) clamp(8px, 0.9vw, 16px);
+    border-radius: var(--radius-sm);
     background: rgba(255,255,255,0.55);
     border: 1px solid rgba(255,255,255,0.6);
     transition: all .3s ease;
@@ -226,13 +236,13 @@
     padding: 5px 6px; border-radius: 10px;
     background: rgba(255,255,255,0.7); color: var(--text-main);
   }
-  .cal-date .d { font-size: 18px; font-weight: 800; line-height: 1; }
-  .cal-date .m { font-size: 9px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+  .cal-date .d { font-size: clamp(13px, 1.1vw, 22px); font-weight: 800; line-height: 1; }
+  .cal-date .m { font-size: clamp(7px, 0.55vw, 11px); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
   .cal-info { flex: 1; }
-  .cal-info .ci-title { font-size: 13px; font-weight: 700; }
-  .cal-info .ci-sub { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+  .cal-info .ci-title { font-size: clamp(10px, 0.85vw, 16px); font-weight: 700; }
+  .cal-info .ci-sub { font-size: clamp(8px, 0.7vw, 13px); opacity: 0.85; margin-top: 2px; }
   .cal-badge {
-    font-size: 9px; padding: 3px 8px; border-radius: 999px;
+    font-size: clamp(7px, 0.55vw, 11px); padding: 3px 8px; border-radius: 999px;
     background: rgba(255,212,59,0.4); color: #7a4a00; font-weight: 700; white-space: nowrap;
   }
   .cal-item.today .cal-badge { background: rgba(255,255,255,0.35); color: #fff; }
@@ -250,6 +260,9 @@
     header.topbar { flex-direction: column; gap: 12px; text-align: center; }
     .clock { text-align: center; }
   }
+  @media (orientation: portrait) and (min-width: 800px) {
+    .dashboard { grid-template-columns: 1fr 1fr; }
+  }
   .widget { animation: fadeIn 0.8s ease both; }
   .widget:nth-child(2) { animation-delay: .1s; }
   .widget:nth-child(3) { animation-delay: .2s; }
@@ -259,14 +272,14 @@
 </head>
 <body>
 
-<div class="bubble" style="width:120px;height:120px;top:10%;left:5%;animation-delay:0s;"></div>
-<div class="bubble" style="width:80px;height:80px;top:60%;left:90%;animation-delay:4s;"></div>
-<div class="bubble" style="width:150px;height:150px;top:75%;left:15%;animation-delay:8s;"></div>
-<div class="bubble" style="width:60px;height:60px;top:25%;left:80%;animation-delay:2s;"></div>
+<div class="bubble" style="width:8vw;top:10%;left:5%;animation-delay:0s;"></div>
+<div class="bubble" style="width:5vw;top:60%;left:90%;animation-delay:4s;"></div>
+<div class="bubble" style="width:10vw;top:75%;left:15%;animation-delay:8s;"></div>
+<div class="bubble" style="width:4vw;top:25%;left:80%;animation-delay:2s;"></div>
 
 <header class="topbar">
   <div class="brand">
-    <div class="logo"><img src="logo.png" alt="Облачный Кит"></div>
+    <div class="logo">🐳</div>
     <div>
       <h1>Облачный Кит</h1>
       <p>ДОУ № 2 г. Липецка · 2026–2027 уч. год</p>
@@ -302,7 +315,7 @@
 
 <script>
 /* =========================================================
-   ДАННЫЕ
+   ДАННЫЕ (без изменений)
    ========================================================= */
 
 const GROUPS = [
@@ -422,7 +435,6 @@ const DAY_REGIMES = {
   ]},
 };
 
-/* sub: 'I' — первая половина дня (до 12:00); 'II' — вторая половина дня (после 12:00) */
 const SCHEDULE = {
   g1: [
     { day:0, sub:'I',  subject:'Художественно-эстетическое развитие', abbr:'ОД*', hall:true },
@@ -994,7 +1006,7 @@ const EVENTS = [
 ];
 
 /* =========================================================
-   ЛОГИКА
+   ЛОГИКА (без изменений)
    ========================================================= */
 
 const MONTHS_RU = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -1039,7 +1051,7 @@ function renderClock() {
   document.getElementById('clock-date').textContent =
     `${WEEKDAYS_RU[now.getDay()]}, ${now.getDate()} ${MONTHS_RU[now.getMonth()]} ${now.getFullYear()}`;
   document.getElementById('clock-season').textContent =
-    isSummerSeason(now) ? 'Летний оздоровительный период (Июнь-Август)' : 'Учебный год (Сентябрь-Май)';
+    isSummerSeason(now) ? 'Летний режим (Июнь-Август)' : 'Учебный режим (Сентябрь-Май)';
 }
 
 let activeDayTab = 'Ясли';
