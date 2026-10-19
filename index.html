@@ -700,7 +700,81 @@ const SCHEDULE = {
   ],
 };
 
-const MENU_TODAY = 9;
+/* =========================================================
+   АВТОМАТИЧЕСКАЯ СМЕНА МЕНЮ + ПРОИЗВОДСТВЕННЫЙ КАЛЕНДАРЬ 2026
+   ========================================================= */
+
+// Дата, когда был (или будет) ПЕРВЫЙ день меню (желательно понедельник)
+const MENU_START_DATE = '2026-10-19'; 
+
+// Нерабочие и праздничные дни на 2026 год (с учетом переносов)
+const HOLIDAYS = [
+  // Январь (Новогодние каникулы)
+  '2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04',
+  '2026-01-05', '2026-01-06', '2026-01-07', '2026-01-08',
+  '2026-01-09', '2026-01-10', '2026-01-11',
+  // Февраль (23 февраля + переносы)
+  '2026-02-21', '2026-02-22', '2026-02-23',
+  // Март (8 марта + переносы)
+  '2026-03-07', '2026-03-08', '2026-03-09',
+  // Май (1 мая + переносы)
+  '2026-05-01', '2026-05-02', '2026-05-03',
+  // Май (9 мая + переносы)
+  '2026-05-09', '2026-05-10', '2026-05-11',
+  // Июнь (12 июня + переносы)
+  '2026-06-12', '2026-06-13', '2026-06-14',
+  // Ноябрь (4 ноября)
+  '2026-11-04',
+  // Декабрь (31 декабря — перенос с 4 января)
+  '2026-12-31',
+];
+
+// Проверка: является ли день рабочим (не выходной и не праздник)
+function isWorkingDay(date) {
+  const dayOfWeek = date.getDay();
+  if (dayOfWeek === 0 || dayOfWeek === 6) return false; // Сб и Вс
+  
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const dateStr = `${y}-${m}-${d}`;
+  
+  return !HOLIDAYS.includes(dateStr);
+}
+
+// Вычисление текущего дня меню (от 1 до 10)
+function getMenuDay() {
+  const now = getMoscowNow();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let start = new Date(MENU_START_DATE + 'T00:00:00');
+  
+  // Если старт выпал на выходной — сдвигаем на следующий рабочий день
+  while (!isWorkingDay(start)) {
+    start.setDate(start.getDate() + 1);
+  }
+  
+  let workDaysCount = 0;
+  const cursor = new Date(start);
+  
+  // Считаем только рабочие дни
+  while (cursor <= today) {
+    if (isWorkingDay(cursor)) {
+      workDaysCount++;
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  
+  // Если сегодня выходной — показываем меню последнего рабочего дня
+  if (!isWorkingDay(today)) {
+    if (workDaysCount === 0) return 1;
+    let day = workDaysCount % 10;
+    return day === 0 ? 10 : day;
+  }
+  
+  // Если рабочий — текущий день
+  let day = workDaysCount % 10;
+  return day === 0 ? 10 : day;
+}
 
 const MENU_YASLI = {
   /* ===== ДЕНЬ 1 ===== */
@@ -1441,10 +1515,12 @@ function getSubjectColor(subj) {
 function renderFood() {
   const el = document.getElementById('food-content');
   const now = getMoscowNow();
+  
   if (!isWorkTime(now)) {
     el.innerHTML = `<div class="waiting"><div><div class="big">🍽️</div>Ждем когда снова встретимся</div></div>`;
     return;
   }
+  
   const curMin = minutesOfDay(now);
   const meals = [
     { key:'Завтрак',     s:t(8,30),  e:t(9,0) },
@@ -1456,12 +1532,22 @@ function renderFood() {
   let current = meals.find(m => curMin >= m.s && curMin < m.e);
   if (!current) current = meals.find(m => curMin < m.s) || meals[meals.length-1];
 
-  const menuYas = MENU_YASLI[MENU_TODAY][current.key];
-  const menuSad = MENU_SAD[MENU_TODAY][current.key];
+  // Получаем актуальный день меню (1–10)
+  const todayMenuDay = getMenuDay();
+  
+  // Берем меню для этого дня
+  const menuYas = MENU_YASLI[todayMenuDay]?.[current.key] || MENU_YASLI[1][current.key];
+  const menuSad = MENU_SAD[todayMenuDay]?.[current.key] || MENU_SAD[1][current.key];
+
+  const isTodayHoliday = !isWorkingDay(now);
 
   el.innerHTML = `
     <div class="food-header">
-      <div class="f-name">🍴 ${current.key}</div>
+      <div class="f-name">
+        🍴 ${current.key} 
+        <span style="font-size:0.6em; opacity:0.6; margin-left:8px;">(День ${todayMenuDay})</span>
+        ${isTodayHoliday ? '<span style="font-size:0.55em; background:rgba(255,0,0,0.15); color:#c92a2a; padding:2px 6px; border-radius:4px; margin-left:6px;">Выходной</span>' : ''}
+      </div>
       <div class="f-time">${menuSad.time}</div>
     </div>
     <div class="food-subtitle">Ясли (2–3 года)</div>
