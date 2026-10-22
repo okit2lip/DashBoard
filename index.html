@@ -25,11 +25,10 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: var(--text-main);
     background: #e8eefc;
-    overflow: hidden; /* Запрет прокрутки всей страницы */
-    font-size: 16px; /* Базовый размер */
+    overflow: hidden;
+    font-size: 16px;
   }
 
-  /* Фон */
   body::before {
     content: ""; position: fixed; inset: 0; z-index: -2;
     background:
@@ -40,15 +39,12 @@
       linear-gradient(135deg, #f1f3ff 0%, #e3ecff 100%);
   }
 
-  /* Делаем body flex-контейнером: шапка сверху, дашборд снизу */
   body {
     display: flex;
     flex-direction: column;
   }
 
-  /* ====================================================
-     ШАПКА
-     ==================================================== */
+  /* Шапка */
   header.topbar {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -62,19 +58,16 @@
     border-radius: var(--radius); 
     box-shadow: var(--glass-shadow);
     gap: var(--gap);
-    flex-shrink: 0; /* Шапка не сжимается */
+    flex-shrink: 0;
   }
   
   .brand { display: flex; align-items: center; gap: 12px; justify-self: start; }
-  
   .brand .logo {
     width: 60px; height: 60px; border-radius: 50%;
     background: #fff; display: flex; align-items: center; justify-content: center;
-    overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    flex-shrink: 0;
+    overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); flex-shrink: 0;
   }
   .brand .logo img { width: 80%; height: 80%; object-fit: contain; }
-  
   .brand h1 { font-size: 20px; line-height: 1.2; }
   .brand p { font-size: 13px; color: var(--text-muted); }
 
@@ -96,17 +89,15 @@
     background: rgba(9, 132, 227, 0.1); padding: 4px 10px; border-radius: 20px;
   }
 
-  /* ====================================================
-     ДАШБОРД (Сетка 2x2, заполняет всё оставшееся место)
-     ==================================================== */
+  /* Дашборд (Сетка 2x2) */
   .dashboard {
-    flex: 1; /* Занимает всё место под шапкой */
+    flex: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: var(--gap);
     padding: var(--gap);
-    min-height: 0; /* Важно для flex-детей */
+    min-height: 0;
   }
 
   .widget {
@@ -115,33 +106,24 @@
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius); box-shadow: var(--glass-shadow);
-    padding: var(--pad); 
-    display: flex; flex-direction: column;
-    overflow: hidden; position: relative;
-    height: 100%; /* Растягиваем на всю ячейку */
-    min-height: 0; 
+    padding: var(--pad); display: flex; flex-direction: column;
+    overflow: hidden; position: relative; height: 100%; min-height: 0; 
   }
   .widget h2 {
     font-size: 14px; font-weight: 700; color: var(--text-muted);
     text-transform: uppercase; letter-spacing: 1px;
-    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-    flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-shrink: 0;
   }
   
-  /* Контейнеры с прокруткой */
   .scrollable {
     display: flex; flex-direction: column; gap: 6px;
     overflow-y: auto; padding-right: 6px;
-    flex: 1; 
-    min-height: 0;
-    scroll-behavior: smooth; 
+    flex: 1; min-height: 0; scroll-behavior: smooth; 
   }
   .scrollable::-webkit-scrollbar { width: 5px; }
   .scrollable::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
 
-  /* ====================================================
-     РЕЖИМ ДНЯ
-     ==================================================== */
+  /* Режим дня */
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; flex-shrink: 0; }
   .tab {
     font-size: 12px; padding: 4px 10px; border-radius: 999px;
@@ -159,22 +141,15 @@
   }
   .moment.active {
     background: linear-gradient(135deg, rgba(77,171,247,0.95), rgba(204,93,232,0.95));
-    color: #fff; box-shadow: 0 4px 12px rgba(77,171,247,0.4);
-    scroll-margin: 20px; 
+    color: #fff; box-shadow: 0 4px 12px rgba(77,171,247,0.4); scroll-margin: 20px; 
   }
   .moment .m-time { font-weight: 700; font-size: 12px; white-space: nowrap; min-width: 90px; }
   .moment .m-name { flex: 1; font-weight: 500; }
   .moment .m-progress { width: 50px; height: 6px; border-radius: 4px; background: rgba(255,255,255,0.35); overflow: hidden; flex-shrink: 0; }
   .moment .m-progress > div { height: 100%; background: #fff; border-radius: 4px; transition: width 1s linear; }
 
-  /* ====================================================
-     РАСПИСАНИЕ
-     ==================================================== */
-  #lesson-tabs {
-    max-height: 60px; /* Ограничиваем высоту списка групп */
-    overflow-y: auto;
-    padding-right: 4px;
-  }
+  /* Расписание */
+  #lesson-tabs { max-height: 60px; overflow-y: auto; padding-right: 4px; }
   #lesson-tabs::-webkit-scrollbar { width: 4px; }
   #lesson-tabs::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
 
@@ -202,9 +177,7 @@
   }
   .waiting .big { font-size: 36px; margin-bottom: 10px; }
 
-  /* ====================================================
-     ПИТАНИЕ
-     ==================================================== */
+  /* Питание (Единый список) */
   .food-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 10px 14px; border-radius: var(--radius-sm);
@@ -229,9 +202,7 @@
   .food-item .fi-name { font-weight: 500; }
   .food-item .fi-weight { color: var(--text-muted); font-weight: 600; white-space: nowrap; margin-left: 8px; font-size: 12px; }
 
-  /* ====================================================
-     КАЛЕНДАРЬ
-     ==================================================== */
+  /* Календарь */
   .cal-item {
     display: flex; gap: 12px; align-items: center; padding: 10px;
     border-radius: var(--radius-sm); background: #fff; flex-shrink: 0;
@@ -249,9 +220,6 @@
   .cal-info .ci-title { font-size: 13px; font-weight: 700; }
   .cal-info .ci-sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
 
-  /* ====================================================
-     АДАПТИВ ДЛЯ МОБИЛЬНЫХ
-     ==================================================== */
   @media (max-width: 900px) {
     body { overflow: auto; display: block; }
     .dashboard { grid-template-columns: 1fr; grid-template-rows: auto; height: auto; }
@@ -295,7 +263,7 @@
   
   <section class="widget food">
     <h2><span class="icon">🍽️</span> Питание</h2>
-    <div class="scrollable" id="food-content"></div>
+    <div class="scrollable" id="food-content" style="padding-right: 0;"></div>
   </section>
   
   <section class="widget calendar">
@@ -328,6 +296,7 @@ const GROUPS = [
 
 function t(h, m) { return h * 60 + m; }
 
+// ---------------- РЕЖИМ ДНЯ: УЧЕБНЫЙ ГОД ----------------
 const DAY_REGIMES = {
   'Ясли': { label: 'Ясли (2–3 года)', moments: [
     { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,20) },
@@ -423,6 +392,101 @@ const DAY_REGIMES = {
     { n: 'Игры / коррекционный час',         s: t(16,0),  e: t(16,30) },
     { n: 'Подготовка к ужину, ужин',         s: t(16,30), e: t(17,0) },
     { n: 'Прогулка, игры, самостоятельная деятельность', s: t(17,0), e: t(19,0) },
+  ]},
+};
+
+// ---------------- ЛЕТНИЙ РЕЖИМ ДНЯ ----------------
+const SUMMER_DAY_REGIMES = {
+  'Ясли': { label: 'Ясли (2–3 года)', moments: [
+    { n: 'Прием детей, утренняя гимнастика на воздухе', s: t(7,0), e: t(8,15) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,15),  e: t(8,55) },
+    { n: 'Игры с водой и песком, наблюдения', s: t(8,55), e: t(9,45) },
+    { n: 'Второй завтрак (соки, фрукты)',    s: t(9,45),  e: t(10,0) },
+    { n: 'Воздушные и солнечные ванны, прогулка', s: t(10,0), e: t(11,30) },
+    { n: 'Подготовка к обеду, обед',         s: t(11,30), e: t(12,20) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,20), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Прогулка, подвижные игры',         s: t(16,0),  e: t(17,0) },
+    { n: 'Подготовка к ужину, ужин',         s: t(17,0),  e: t(17,30) },
+    { n: 'Уход домой',                       s: t(17,30), e: t(19,0) },
+  ]},
+  '2 младшая': { label: '2 младшая', moments: [
+    { n: 'Прием детей, утренняя гимнастика на воздухе', s: t(7,0), e: t(8,15) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,15),  e: t(8,55) },
+    { n: 'Игры с водой и песком, наблюдения', s: t(8,55), e: t(9,45) },
+    { n: 'Второй завтрак (соки, фрукты)',    s: t(9,45),  e: t(10,0) },
+    { n: 'Воздушные и солнечные ванны, прогулка', s: t(10,0), e: t(12,15) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,15), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Прогулка, подвижные игры',         s: t(16,0),  e: t(17,0) },
+    { n: 'Подготовка к ужину, ужин',         s: t(17,0),  e: t(17,30) },
+    { n: 'Уход домой',                       s: t(17,30), e: t(19,0) },
+  ]},
+  'Средняя': { label: 'Средняя', moments: [
+    { n: 'Прием детей, утренняя гимнастика на воздухе', s: t(7,0), e: t(8,15) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,15),  e: t(8,55) },
+    { n: 'Игры с водой и песком, наблюдения', s: t(8,55), e: t(9,45) },
+    { n: 'Второй завтрак (соки, фрукты)',    s: t(9,45),  e: t(10,0) },
+    { n: 'Воздушные и солнечные ванны, прогулка', s: t(10,0), e: t(12,15) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,15), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Прогулка, подвижные игры',         s: t(16,0),  e: t(17,0) },
+    { n: 'Подготовка к ужину, ужин',         s: t(17,0),  e: t(17,30) },
+    { n: 'Уход домой',                       s: t(17,30), e: t(19,0) },
+  ]},
+  'Старшая': { label: 'Старшая', moments: [
+    { n: 'Прием детей, утренняя гимнастика на воздухе', s: t(7,0), e: t(8,15) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,15),  e: t(8,55) },
+    { n: 'Игры с водой и песком, наблюдения', s: t(8,55), e: t(9,45) },
+    { n: 'Второй завтрак (соки, фрукты)',    s: t(9,45),  e: t(10,0) },
+    { n: 'Воздушные и солнечные ванны, прогулка', s: t(10,0), e: t(12,15) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,15), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Прогулка, подвижные игры',         s: t(16,0),  e: t(17,0) },
+    { n: 'Подготовка к ужину, ужин',         s: t(17,0),  e: t(17,30) },
+    { n: 'Уход домой',                       s: t(17,30), e: t(19,0) },
+  ]},
+  'Подготовительная': { label: 'Подготовительная', moments: [
+    { n: 'Прием детей, утренняя гимнастика на воздухе', s: t(7,0), e: t(8,15) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,15),  e: t(8,55) },
+    { n: 'Игры с водой и песком, наблюдения', s: t(8,55), e: t(9,45) },
+    { n: 'Второй завтрак (соки, фрукты)',    s: t(9,45),  e: t(10,0) },
+    { n: 'Воздушные и солнечные ванны, прогулка', s: t(10,0), e: t(12,15) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,15), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Прогулка, подвижные игры',         s: t(16,0),  e: t(17,0) },
+    { n: 'Подготовка к ужину, ужин',         s: t(17,0),  e: t(17,30) },
+    { n: 'Уход домой',                       s: t(17,30), e: t(19,0) },
+  ]},
+  'Оздоровительная': { label: 'Оздоровительная', moments: [
+    { n: 'Прием детей, утренняя гимнастика на воздухе', s: t(7,0), e: t(8,15) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,15),  e: t(8,55) },
+    { n: 'Игры с водой и песком, наблюдения', s: t(8,55), e: t(9,45) },
+    { n: 'Второй завтрак (соки, фрукты)',    s: t(9,45),  e: t(10,0) },
+    { n: 'Воздушные и солнечные ванны, прогулка', s: t(10,0), e: t(12,15) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,15), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Прогулка, подвижные игры',         s: t(16,0),  e: t(17,0) },
+    { n: 'Подготовка к ужину, ужин',         s: t(17,0),  e: t(17,30) },
+    { n: 'Уход домой',                       s: t(17,30), e: t(19,0) },
+  ]},
+  'Логопедическая': { label: 'Логопедическая', moments: [
+    { n: 'Прием детей, утренняя гимнастика на воздухе', s: t(7,0), e: t(8,15) },
+    { n: 'Подготовка к завтраку, завтрак',   s: t(8,15),  e: t(8,55) },
+    { n: 'Игры с водой и песком, наблюдения', s: t(8,55), e: t(9,45) },
+    { n: 'Второй завтрак (соки, фрукты)',    s: t(9,45),  e: t(10,0) },
+    { n: 'Воздушные и солнечные ванны, прогулка', s: t(10,0), e: t(12,15) },
+    { n: 'Подготовка к обеду, обед',         s: t(12,15), e: t(12,50) },
+    { n: 'Подготовка ко сну, дневной сон',   s: t(12,50), e: t(15,30) },
+    { n: 'Полдник',                          s: t(15,30), e: t(16,0) },
+    { n: 'Прогулка, подвижные игры',         s: t(16,0),  e: t(17,0) },
+    { n: 'Подготовка к ужину, ужин',         s: t(17,0),  e: t(17,30) },
+    { n: 'Уход домой',                       s: t(17,30), e: t(19,0) },
   ]},
 };
 
@@ -672,19 +736,22 @@ const SCHEDULE = {
   ],
 };
 
+// Заглушка для летнего расписания
+const SUMMER_SCHEDULE = {
+  g1: [{ day:0, sub:'I', subject:'Прогулка', abbr:'ЛОП' }, { day:0, sub:'II', subject:'Игры', abbr:'ЛОП' }]
+};
+
+/* =========================================================
+   АВТОМАТИЧЕСКАЯ СМЕНА МЕНЮ
+   ========================================================= */
+
 const MENU_START_DATE = '2026-10-19'; 
 
 const HOLIDAYS = [
-  '2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04',
-  '2026-01-05', '2026-01-06', '2026-01-07', '2026-01-08',
-  '2026-01-09', '2026-01-10', '2026-01-11',
-  '2026-02-21', '2026-02-22', '2026-02-23',
-  '2026-03-07', '2026-03-08', '2026-03-09',
-  '2026-05-01', '2026-05-02', '2026-05-03',
-  '2026-05-09', '2026-05-10', '2026-05-11',
-  '2026-06-12', '2026-06-13', '2026-06-14',
-  '2026-11-04',
-  '2026-12-31',
+  '2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', '2026-01-05', '2026-01-06', '2026-01-07', '2026-01-08', '2026-01-09', '2026-01-10', '2026-01-11',
+  '2026-02-21', '2026-02-22', '2026-02-23', '2026-03-07', '2026-03-08', '2026-03-09',
+  '2026-05-01', '2026-05-02', '2026-05-03', '2026-05-09', '2026-05-10', '2026-05-11',
+  '2026-06-12', '2026-06-13', '2026-06-14', '2026-11-04', '2026-12-31',
 ];
 
 function isWorkingDay(date) {
@@ -701,27 +768,18 @@ function getMenuDay() {
   const now = getMoscowNow();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   let start = new Date(MENU_START_DATE + 'T00:00:00');
-  
-  while (!isWorkingDay(start)) {
-    start.setDate(start.getDate() + 1);
-  }
-  
+  while (!isWorkingDay(start)) { start.setDate(start.getDate() + 1); }
   let workDaysCount = 0;
   const cursor = new Date(start);
-  
   while (cursor <= today) {
-    if (isWorkingDay(cursor)) {
-      workDaysCount++;
-    }
+    if (isWorkingDay(cursor)) workDaysCount++;
     cursor.setDate(cursor.getDate() + 1);
   }
-  
   if (!isWorkingDay(today)) {
     if (workDaysCount === 0) return 1;
     let day = workDaysCount % 10;
     return day === 0 ? 10 : day;
   }
-  
   let day = workDaysCount % 10;
   return day === 0 ? 10 : day;
 }
@@ -1036,7 +1094,7 @@ function renderClock() {
   document.getElementById('clock-date').textContent =
     `${WEEKDAYS_RU[now.getDay()]}, ${now.getDate()} ${MONTHS_RU[now.getMonth()]} ${now.getFullYear()}`;
   document.getElementById('clock-season').textContent =
-    isSummerSeason(now) ? 'Летний оздоровительный период' : 'Учебный год';
+    isSummerSeason(now) ? 'Летний оздоровительный период (Июнь-Август)' : 'Учебный год (Сентябрь-Май)';
 }
 
 let activeDayTab = 'Ясли';
@@ -1051,6 +1109,7 @@ function renderDayTabs() {
     renderDayTabs(); renderDay();
   });
 }
+
 function renderDay() {
   const el = document.getElementById('day-content');
   const now = getMoscowNow();
@@ -1058,9 +1117,15 @@ function renderDay() {
     el.innerHTML = `<div class="waiting"><div><div class="big">🌙</div>Ждем когда снова встретимся</div></div>`;
     return;
   }
-  const regime = DAY_REGIMES[activeDayTab];
+  
+  // ВЫБОР РЕЖИМА В ЗАВИСИМОСТИ ОТ СЕЗОНА
+  const isSummer = isSummerSeason(now);
+  const activeRegimes = isSummer ? SUMMER_DAY_REGIMES : DAY_REGIMES;
+  const regime = activeRegimes[activeDayTab];
+  
   const curMin = minutesOfDay(now);
-  let html = '';
+  let html = '<div class="day-list" style="display:flex; flex-direction:column; gap:7px;">';
+  
   regime.moments.forEach(m => {
     const active = curMin >= m.s && curMin < m.e;
     const progress = active ? Math.round(((curMin - m.s) / (m.e - m.s)) * 100) : 0;
@@ -1072,9 +1137,11 @@ function renderDay() {
       ${active ? `<div class="m-progress"><div style="width:${progress}%"></div></div>` : ''}
     </div>`;
   });
+  
+  html += '</div>';
   el.innerHTML = html;
 
-  // Автоскролл к текущему моменту
+  // АВТОПРОКРУТКА К ТЕКУЩЕМУ МОМЕНТУ
   const activeMoment = el.querySelector('.moment.active');
   if (activeMoment) {
     activeMoment.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1092,6 +1159,7 @@ function renderLessonTabs() {
     renderLessonTabs(); renderLesson();
   });
 }
+
 function renderLesson() {
   const el = document.getElementById('lesson-content');
   const now = getMoscowNow();
@@ -1099,6 +1167,13 @@ function renderLesson() {
     el.innerHTML = `<div class="waiting"><div><div class="big">🌙</div>Ждем когда снова встретимся</div></div>`;
     return;
   }
+  
+  // В ЛЕТНИЙ ПЕРИОД ЗАНЯТИЙ НЕТ
+  if (isSummerSeason(now)) {
+    el.innerHTML = `<div class="waiting"><div><div class="big">🌞</div>Летний оздоровительный период.<br>Занятия не проводятся.</div></div>`;
+    return;
+  }
+  
   const dayIdx = now.getDay();
   if (dayIdx === 0 || dayIdx === 6) {
     el.innerHTML = `<div class="waiting"><div><div class="big">🌞</div>Выходной — занимаемся интересными делами</div></div>`;
@@ -1145,6 +1220,7 @@ function renderLesson() {
   });
   el.innerHTML = html;
 }
+
 function getSubjectColor(subj) {
   if (subj.includes('Социально')) return '#4dabf7';
   if (subj.includes('Познавательное')) return '#51cf66';
@@ -1181,17 +1257,10 @@ function renderFood() {
   if (!current) current = meals.find(m => curMin < m.s) || meals[meals.length-1];
 
   const todayMenuDay = getMenuDay();
+  const menuYas = MENU_YASLI[todayMenuDay]?.[current.key] || MENU_YASLI[1][current.key];
+  const menuSad = MENU_SAD[todayMenuDay]?.[current.key] || MENU_SAD[1][current.key];
+  const menuOzd = MENU_OZD[todayMenuDay]?.[current.key] || MENU_OZD[1][current.key];
   const isTodayHoliday = !isWorkingDay(now);
-
-  const renderGroup = (title, data) => {
-    const menu = data[todayMenuDay]?.[current.key] || data[1][current.key];
-    return `
-      <div class="food-subtitle">${title}</div>
-      ${menu.items.map(i => `
-        <div class="food-item"><span class="fi-name">${i.n}</span><span class="fi-weight">${i.w}</span></div>
-      `).join('')}
-    `;
-  };
 
   el.innerHTML = `
     <div class="food-header">
@@ -1200,14 +1269,23 @@ function renderFood() {
         <span style="font-size:0.6em; opacity:0.6; margin-left:8px;">(День ${todayMenuDay})</span>
         ${isTodayHoliday ? '<span style="font-size:0.55em; background:rgba(255,0,0,0.15); color:#c92a2a; padding:2px 6px; border-radius:4px; margin-left:6px;">Выходной</span>' : ''}
       </div>
-      <div class="f-time">${MEALS_TIME[current.key]}</div>
+      <div class="f-time">${menuSad.time}</div>
     </div>
     
-    <div>
-      ${renderGroup('Ясли', MENU_YASLI)}
-      ${renderGroup('Сад', MENU_SAD)}
-      ${renderGroup('Оздоровительная группа', MENU_OZD)}
-    </div>
+    <div class="food-subtitle" style="border-left-color: #a78bfa;">Ясли (2–3 года)</div>
+    <div class="food-items" style="max-height:none; margin-bottom:8px;">${menuYas.items.map(i => `
+      <div class="food-item"><span class="fi-name">${i.n}</span><span class="fi-weight">${i.w}</span></div>
+    `).join('')}</div>
+    
+    <div class="food-subtitle" style="border-left-color: #4dabf7;">Сад (3–7 лет)</div>
+    <div class="food-items" style="max-height:none; margin-bottom:8px;">${menuSad.items.map(i => `
+      <div class="food-item"><span class="fi-name">${i.n}</span><span class="fi-weight">${i.w}</span></div>
+    `).join('')}</div>
+
+    <div class="food-subtitle" style="border-left-color: #34d399;">Оздоровительная</div>
+    <div class="food-items" style="max-height:none;">${menuOzd.items.map(i => `
+      <div class="food-item"><span class="fi-name">${i.n}</span><span class="fi-weight">${i.w}</span></div>
+    `).join('')}</div>
 
     <div style="margin-top:10px;font-size:10.5px;color:var(--text-muted);text-align:center;">
       🕒 Выдача: ${FOOD_SCHEDULE['g1'][current.key]} — ${FOOD_SCHEDULE['g12'][current.key]} (по графику групп)
