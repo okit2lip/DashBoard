@@ -296,7 +296,6 @@ const GROUPS = [
 
 function t(h, m) { return h * 60 + m; }
 
-// ---------------- РЕЖИМ ДНЯ: УЧЕБНЫЙ ГОД ----------------
 const DAY_REGIMES = {
   'Ясли': { label: 'Ясли (2–3 года)', moments: [
     { n: 'Прием детей, утренняя гимнастика', s: t(7,0),   e: t(8,20) },
@@ -395,7 +394,6 @@ const DAY_REGIMES = {
   ]},
 };
 
-// ---------------- ЛЕТНИЙ РЕЖИМ ДНЯ ----------------
 const SUMMER_DAY_REGIMES = {
   'Ясли': { label: 'Ясли (2–3 года)', moments: [
     { n: 'Прием детей, утренняя гимнастика на воздухе', s: t(7,0), e: t(8,15) },
@@ -736,11 +734,6 @@ const SCHEDULE = {
   ],
 };
 
-// Заглушка для летнего расписания
-const SUMMER_SCHEDULE = {
-  g1: [{ day:0, sub:'I', subject:'Прогулка', abbr:'ЛОП' }, { day:0, sub:'II', subject:'Игры', abbr:'ЛОП' }]
-};
-
 /* =========================================================
    АВТОМАТИЧЕСКАЯ СМЕНА МЕНЮ
    ========================================================= */
@@ -1069,12 +1062,17 @@ function getMoscowNow() {
 }
 function pad(n){ return n < 10 ? '0'+n : ''+n; }
 function minutesOfDay(d){ return d.getHours()*60 + d.getMinutes(); }
+
+// ГЛАВНАЯ ПРОВЕРКА: Работает ли садик сейчас (учитывает время, выходные и праздники)
 function isWorkTime(now) {
-  const day = now.getDay();
-  if (day === 0 || day === 6) return false;
+  // 1. Проверяем, что это не выходной и не праздник
+  if (!isWorkingDay(now)) return false;
+  
+  // 2. Проверяем время (с 7:00 до 19:00)
   const m = minutesOfDay(now);
   return m >= t(7,0) && m < t(19,0);
 }
+
 function isSummerSeason(now) {
   const mo = now.getMonth() + 1;
   return mo >= 6 && mo <= 8;
@@ -1113,12 +1111,13 @@ function renderDayTabs() {
 function renderDay() {
   const el = document.getElementById('day-content');
   const now = getMoscowNow();
+  
+  // Если выходной или нерабочее время — заглушка
   if (!isWorkTime(now)) {
-    el.innerHTML = `<div class="waiting"><div><div class="big">🌙</div>Ждем когда снова встретимся</div></div>`;
+    el.innerHTML = `<div class="waiting"><div><div class="big">🕰</div>Сейчас отличное время для отдыха</div></div>`;
     return;
   }
   
-  // ВЫБОР РЕЖИМА В ЗАВИСИМОСТИ ОТ СЕЗОНА
   const isSummer = isSummerSeason(now);
   const activeRegimes = isSummer ? SUMMER_DAY_REGIMES : DAY_REGIMES;
   const regime = activeRegimes[activeDayTab];
@@ -1141,7 +1140,7 @@ function renderDay() {
   html += '</div>';
   el.innerHTML = html;
 
-  // АВТОПРОКРУТКА К ТЕКУЩЕМУ МОМЕНТУ
+  // Автопрокрутка к активному моменту
   const activeMoment = el.querySelector('.moment.active');
   if (activeMoment) {
     activeMoment.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1163,26 +1162,24 @@ function renderLessonTabs() {
 function renderLesson() {
   const el = document.getElementById('lesson-content');
   const now = getMoscowNow();
+  
+  // Если выходной или нерабочее время — заглушка
   if (!isWorkTime(now)) {
-    el.innerHTML = `<div class="waiting"><div><div class="big">🌙</div>Ждем когда снова встретимся</div></div>`;
+    el.innerHTML = `<div class="waiting"><div><div class="big">🧩</div>Самое время просто по играть</div></div>`;
     return;
   }
   
-  // В ЛЕТНИЙ ПЕРИОД ЗАНЯТИЙ НЕТ
   if (isSummerSeason(now)) {
     el.innerHTML = `<div class="waiting"><div><div class="big">🌞</div>Летний оздоровительный период.<br>Занятия не проводятся.</div></div>`;
     return;
   }
   
   const dayIdx = now.getDay();
-  if (dayIdx === 0 || dayIdx === 6) {
-    el.innerHTML = `<div class="waiting"><div><div class="big">🌞</div>Выходной — занимаемся интересными делами</div></div>`;
-    return;
-  }
   const scheduleDay = dayIdx - 1;
   const half = getHalfOfDay(now);
   const todayLessons = (SCHEDULE[activeLessonGroup] || []).filter(l => l.day === scheduleDay);
   let display = todayLessons.filter(l => l.sub === half);
+  
   if (activeLessonGroup === 'g14') {
     if (half === 'I') {
       display = todayLessons.filter(l => l.sub === 'I' && l.abbr !== 'Коррекционный час');
@@ -1190,16 +1187,19 @@ function renderLesson() {
       display = todayLessons.filter(l => l.sub === 'II');
     }
   }
+  
   if (display.length === 0) {
     el.innerHTML = `<div class="waiting"><div><div class="big">🎨</div>Занимаемся интересными делами</div></div>`;
     return;
   }
+  
   let html = `
     <div class="half-badge">
       <span class="hb-icon">${half === 'I' ? '🌅' : '🌇'}</span>
       <span class="hb-text">Сейчас идёт: ${halfOfDayLabel(half)}</span>
     </div>
   `;
+  
   display.forEach(l => {
     let badgeCls = 'od';
     if (l.abbr === 'ОДРМ') badgeCls = 'odrm';
@@ -1240,8 +1240,9 @@ function renderFood() {
   const el = document.getElementById('food-content');
   const now = getMoscowNow();
   
+  // ЕСЛИ ВЫХОДНОЙ ИЛИ НЕРАБОЧЕЕ ВРЕМЯ — ЗАГЛУШКА (ЭТО ИСПРАВЛЯЕТ БАГ)
   if (!isWorkTime(now)) {
-    el.innerHTML = `<div class="waiting"><div><div class="big">🍽️</div>Ждем когда снова встретимся</div></div>`;
+    el.innerHTML = `<div class="waiting"><div><div class="big">🍽️</div>Придумываем что-то очень вкусное</div></div>`;
     return;
   }
   
@@ -1269,7 +1270,7 @@ function renderFood() {
         <span style="font-size:0.6em; opacity:0.6; margin-left:8px;">(День ${todayMenuDay})</span>
         ${isTodayHoliday ? '<span style="font-size:0.55em; background:rgba(255,0,0,0.15); color:#c92a2a; padding:2px 6px; border-radius:4px; margin-left:6px;">Выходной</span>' : ''}
       </div>
-      <div class="f-time">${menuSad.time}</div>
+      <div class="f-time">${MEALS_TIME[current.key]}</div>
     </div>
     
     <div class="food-subtitle" style="border-left-color: #a78bfa;">Ясли (2–3 года)</div>
