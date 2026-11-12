@@ -5,114 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Облачный Кит — Дашборд ДОУ №2</title>
 <style>
-  :root {
-    --glass-bg: rgba(255, 255, 255, 0.55);
-    --glass-bg-strong: rgba(255, 255, 255, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.7);
-    --glass-shadow: 0 4px 20px rgba(31, 38, 135, 0.1);
-    --text-main: #1a2340;
-    --text-muted: #5a6684;
-    --radius: 16px;
-    --radius-sm: 10px;
-    --gap: 16px;
-    --pad: 16px;
-  }
+  :root { --glass-bg: rgba(255, 255, 255, 0.55); --glass-bg-strong: rgba(255, 255, 255, 0.75); --glass-border: rgba(255, 255, 255, 0.7); --glass-shadow: 0 4px 20px rgba(31, 38, 135, 0.1); --text-main: #1a2340; --text-muted: #5a6684; --radius: 16px; --radius-sm: 10px; --gap: 16px; --pad: 16px; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    color: var(--text-main);
-    background: #e8eefc;
-    overflow: hidden;
-    font-size: 16px;
-  }
-  body::before {
-    content: ""; position: fixed; inset: 0; z-index: -2;
-    background: radial-gradient(circle at 15% 20%, #a5d8ff 0%, transparent 40%),
-                radial-gradient(circle at 85% 15%, #ffd8a8 0%, transparent 40%),
-                radial-gradient(circle at 20% 85%, #b2f2bb 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, #eebefa 0%, transparent 40%),
-                linear-gradient(135deg, #f1f3ff 0%, #e3ecff 100%);
-  }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text-main); background: #e8eefc; overflow: hidden; font-size: 16px; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at 15% 20%, #a5d8ff 0%, transparent 40%), radial-gradient(circle at 85% 15%, #ffd8a8 0%, transparent 40%), radial-gradient(circle at 20% 85%, #b2f2bb 0%, transparent 40%), radial-gradient(circle at 80% 80%, #eebefa 0%, transparent 40%), linear-gradient(135deg, #f1f3ff 0%, #e3ecff 100%); }
   body { display: flex; flex-direction: column; }
-
-  header.topbar {
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-    padding: var(--pad); margin: var(--gap) var(--gap) 0;
-    background: var(--glass-bg-strong); backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--glass-shadow);
-    gap: var(--gap); flex-shrink: 0;
-  }
+  header.topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: var(--pad); margin: var(--gap) var(--gap) 0; background: var(--glass-bg-strong); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--glass-shadow); gap: var(--gap); flex-shrink: 0; }
   .brand { display: flex; align-items: center; gap: 12px; justify-self: start; }
   .brand .logo { width: 60px; height: 60px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-size: 30px; }
-  .brand h1 { font-size: 20px; font-weight: 700; }
-  .brand p { font-size: 13px; color: var(--text-muted); }
+  .brand h1 { font-size: 20px; font-weight: 700; } .brand p { font-size: 13px; color: var(--text-muted); }
   .clock-time-center { justify-self: center; text-align: center; }
   .clock-time-center .time { font-size: 48px; font-weight: 800; line-height: 1; background: linear-gradient(135deg, #6c5ce7, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .clock-info-right { justify-self: end; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
   .clock-info-right .date { font-size: 15px; font-weight: 600; color: #636e72; }
   .clock-info-right .season { font-size: 12px; font-weight: 600; color: #0984e3; background: rgba(9, 132, 227, 0.1); padding: 4px 10px; border-radius: 20px; }
-
   .dashboard { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: var(--gap); padding: var(--gap); min-height: 0; }
   .widget { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--glass-shadow); padding: var(--pad); display: flex; flex-direction: column; overflow: hidden; position: relative; height: 100%; min-height: 0; }
   .widget h2 { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
-  
   .scrollable { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-right: 6px; flex: 1; min-height: 0; scroll-behavior: smooth; }
-  .scrollable::-webkit-scrollbar { width: 5px; }
-  .scrollable::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
-
+  .scrollable::-webkit-scrollbar { width: 5px; } .scrollable::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; flex-shrink: 0; }
   .tab { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.6); color: var(--text-muted); cursor: pointer; transition: all .2s; font-weight: 600; white-space: nowrap; }
-  .tab:hover { background: rgba(255,255,255,0.8); }
-  .tab.active { background: linear-gradient(135deg, #4dabf7, #cc5de8); color: #fff; border-color: transparent; }
-
+  .tab:hover { background: rgba(255,255,255,0.8); } .tab.active { background: linear-gradient(135deg, #4dabf7, #cc5de8); color: #fff; border-color: transparent; }
   .moment { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.5); transition: all .3s; font-size: 14px; flex-shrink: 0; }
   .moment.active { background: linear-gradient(135deg, rgba(77,171,247,0.95), rgba(204,93,232,0.95)); color: #fff; box-shadow: 0 4px 12px rgba(77,171,247,0.45); scroll-margin: 20px; }
-  .moment .m-time { font-weight: 700; font-size: 12px; white-space: nowrap; min-width: 90px; }
-  .moment .m-name { flex: 1; font-weight: 500; }
-
+  .moment .m-time { font-weight: 700; font-size: 12px; white-space: nowrap; min-width: 90px; } .moment .m-name { flex: 1; font-weight: 500; }
+  .moment .m-progress { width: 50px; height: 6px; border-radius: 4px; background: rgba(255,255,255,0.35); overflow: hidden; flex-shrink: 0; } .moment .m-progress > div { height: 100%; background: #fff; border-radius: 4px; transition: width 1s linear; }
   #lesson-tabs { max-height: 60px; overflow-y: auto; padding-right: 4px; }
-  
-  /* Разделитель половин дня */
-  .half-divider {
-    display: flex; align-items: center; gap: 8px;
-    padding: 4px 10px; margin: 8px 0 4px;
-    font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted);
-    background: rgba(255,255,255,0.7); border-radius: 8px; border-left: 3px solid #4dabf7;
-  }
+  .half-divider { display: flex; align-items: center; gap: 8px; padding: 4px 10px; margin: 8px 0 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); background: rgba(255,255,255,0.7); border-radius: 8px; border-left: 3px solid #4dabf7; }
   .half-divider.active-half { border-left-color: #cc5de8; background: rgba(204,93,232,0.1); color: #862e9c; }
-
   .lesson-card { background: #fff; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 6px; border-left: 4px solid #4dabf7; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
   .lesson-card.past { opacity: 0.6; filter: grayscale(0.3); }
   .lesson-card .l-area { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
-  .lesson-card .l-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-  .lesson-card .l-meta { display: flex; gap: 6px; flex-wrap: wrap; }
-  
+  .lesson-card .l-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; } .lesson-card .l-meta { display: flex; gap: 6px; flex-wrap: wrap; }
   .badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 12px; background: #e3f2fd; color: #1864ab; }
-  .badge.hall { background: #fff3cd; color: #997404; }
-  .badge.odrm { background: rgba(204,93,232,0.15); color: #862e9c; }
-  .badge.sd { background: rgba(81,207,102,0.18); color: #2b8a3e; }
-  .badge.kp { background: rgba(255,146,43,0.18); color: #d9480f; }
-
+  .badge.hall { background: #fff3cd; color: #997404; } .badge.odrm { background: rgba(204,93,232,0.15); color: #862e9c; }
+  .badge.sd { background: rgba(81,207,102,0.18); color: #2b8a3e; } .badge.kp { background: rgba(255,146,43,0.18); color: #d9480f; }
   .waiting { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; color: var(--text-muted); font-size: 14px; font-weight: 600; }
   .waiting .big { font-size: 36px; margin-bottom: 10px; }
-  
-  .refresh-btn { background: transparent; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; transition: 0.2s; }
-  .refresh-btn:hover { opacity: 1; transform: rotate(90deg); }
+  .refresh-btn { background: transparent; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; transition: 0.2s; } .refresh-btn:hover { opacity: 1; transform: rotate(90deg); }
 </style>
 </head>
 <body>
-
 <header class="topbar">
-  <div class="brand">
-    <div class="logo">🐳</div>
-    <div><h1>Облачный Кит</h1><p>ДОУ № 2 г. Липецка</p></div>
-  </div>
+  <div class="brand"><div class="logo">🐳</div><div><h1>Облачный Кит</h1><p>ДОУ № 2 г. Липецка</p></div></div>
   <div class="clock-time-center"><div class="time" id="clock-time">--:--:--</div></div>
-  <div class="clock-info-right">
-    <div class="date" id="clock-date">—</div>
-    <div class="season" id="clock-season">—</div>
-  </div>
+  <div class="clock-info-right"><div class="date" id="clock-date">—</div><div class="season" id="clock-season">—</div></div>
 </header>
 
 <main class="dashboard">
@@ -121,251 +59,240 @@
     <div class="tabs" id="day-tabs"></div>
     <div class="scrollable" id="day-content"></div>
   </section>
-  
   <section class="widget lessons">
-    <h2>
-      <span><span class="icon">📚</span> Расписание занятий</span>
-      <button class="refresh-btn" onclick="loadLessons()" title="Обновить данные">🔄</button>
-    </h2>
+    <h2><span><span class="icon">📚</span> Расписание занятий</span><button class="refresh-btn" onclick="loadData()" title="Обновить данные">🔄</button></h2>
     <div class="tabs" id="lesson-tabs"></div>
-    <div class="scrollable" id="lesson-content">
-      <div class="waiting"><div><div class="big">⏳</div>Загрузка данных...</div></div>
-    </div>
+    <div class="scrollable" id="lesson-content"></div>
   </section>
-  
   <section class="widget food">
     <h2><span class="icon">🍽️</span> Питание</h2>
-    <div class="scrollable" id="food-content" style="padding-right: 0;">
-      <div class="waiting"><div><div class="big">🍲</div>Меню на сегодня</div></div>
-    </div>
+    <div class="scrollable" id="food-content" style="padding-right: 0;"></div>
   </section>
-  
   <section class="widget calendar">
     <h2><span class="icon">🎉</span> События и утренники</h2>
-    <div class="scrollable" id="calendar-content">
-      <div class="waiting"><div><div class="big">🎉</div>События</div></div>
-    </div>
+    <div class="scrollable" id="calendar-content"></div>
   </section>
 </main>
 
 <script>
+// ID ТАБЛИЦЫ И GID ЛИСТОВ
+const SHEET_ID = '1pNStzDFpQCoFSE0ie_6-ma81DXDD0Ue-Tat6YXLiE18';
+const SCHEDULE_GID = '1031367568'; 
+const REGIME_GID = '1135698480'; 
+
+// ПРАВИЛЬНЫЙ ПАРСЕР ВРЕМЕНИ (не обрезает минуты)
+function parseDateToTime(dateStr) {
+  if (!dateStr) return '';
+  const str = String(dateStr).trim();
+  
+  // Если это объект Date (содержит 'T')
+  if (str.includes('T')) {
+    const d = new Date(str);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+  
+  // Если это просто строка (например, "13:00:00" или "13:00")
+  // Регулярное выражение ищет ЧЧ:ММ и игнорирует всё, что идет после (секунды)
+  const match = str.match(/(\d{1,2}):(\d{2})/);
+  if (match) {
+    const h = parseInt(match[1]);
+    const m = parseInt(match[2]);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+  return str;
+}
 function t(h, m) { return h * 60 + m; }
-
-const DAY_REGIMES = {
-  'Ясли': { label: 'Ясли', moments: [ { n: 'Прием детей', s: t(7,0), e: t(8,20) }, { n: 'Завтрак', s: t(8,20), e: t(9,0) }, { n: 'Обед', s: t(11,30), e: t(12,30) }, { n: 'Ужин', s: t(16,30), e: t(19,0) } ]},
-  '2 младшая': { label: '2 младшая', moments: [ { n: 'Прием детей', s: t(7,0), e: t(8,30) }, { n: 'Завтрак', s: t(8,30), e: t(9,0) }, { n: 'Обед', s: t(12,20), e: t(12,50) }, { n: 'Ужин', s: t(16,30), e: t(19,0) } ]},
-  'Средняя': { label: 'Средняя', moments: [ { n: 'Прием детей', s: t(7,0), e: t(8,30) }, { n: 'Завтрак', s: t(8,30), e: t(9,0) }, { n: 'Обед', s: t(12,20), e: t(12,50) }, { n: 'Ужин', s: t(16,30), e: t(19,0) } ]},
-  'Старшая': { label: 'Старшая', moments: [ { n: 'Прием детей', s: t(7,0), e: t(8,30) }, { n: 'Завтрак', s: t(8,30), e: t(9,0) }, { n: 'Обед', s: t(12,20), e: t(12,50) }, { n: 'Ужин', s: t(16,30), e: t(19,0) } ]},
-  'Подготовительная': { label: 'Подготовительная', moments: [ { n: 'Прием детей', s: t(7,0), e: t(8,30) }, { n: 'Завтрак', s: t(8,30), e: t(9,0) }, { n: 'Обед', s: t(12,30), e: t(13,0) }, { n: 'Ужин', s: t(16,30), e: t(19,0) } ]},
-  'Оздоровительная': { label: 'Оздоровительная', moments: [ { n: 'Прием детей', s: t(7,0), e: t(8,30) }, { n: 'Завтрак', s: t(8,30), e: t(9,0) }, { n: 'Обед', s: t(12,20), e: t(12,50) }, { n: 'Ужин', s: t(16,30), e: t(19,0) } ]},
-  'Логопедическая': { label: 'Логопедическая', moments: [ { n: 'Прием детей', s: t(7,0), e: t(8,30) }, { n: 'Завтрак', s: t(8,30), e: t(9,0) }, { n: 'Обед', s: t(12,30), e: t(13,0) }, { n: 'Ужин', s: t(16,30), e: t(19,0) } ]},
-};
-
 const MONTHS_RU = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 const WEEKDAYS_RU = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
-
-function getMoscowNow() {
-  const now = new Date();
-  const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Moscow', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
-  const parts = {}; fmt.formatToParts(now).forEach(p => parts[p.type] = p.value);
-  return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`);
-}
+function getMoscowNow() { const now = new Date(); const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Moscow', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }); const parts = {}; fmt.formatToParts(now).forEach(p => parts[p.type] = p.value); return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`); }
 function pad(n){ return n < 10 ? '0'+n : ''+n; }
+function minutesOfDay(d){ return d.getHours()*60 + d.getMinutes(); }
 
 function renderClock() {
   const now = getMoscowNow();
   document.getElementById('clock-time').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   document.getElementById('clock-date').textContent = `${WEEKDAYS_RU[now.getDay()]}, ${now.getDate()} ${MONTHS_RU[now.getMonth()]} ${now.getFullYear()}`;
-  
-  // Автоматическое обновление в 12:00
-  const currentHour = now.getHours();
-  if (window.lastHour !== currentHour) {
-    window.lastHour = currentHour;
-    renderLesson();
+  const isSummer = (now.getMonth() + 1 >= 6 && now.getMonth() + 1 <= 8);
+  document.getElementById('clock-season').textContent = isSummer ? 'Летний период' : 'Учебный год';
+}
+
+let allLessons = []; let allRegime = []; let activeLessonGroup = null; let activeDayGroup = '2 младшая'; let uniqueGroups = []; let regimeGroups = [];
+
+function parseCSV(text) {
+  const rows = []; let current = ''; let inQuotes = false; let row = [];
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === '"') inQuotes = !inQuotes;
+    else if (char === ',' && !inQuotes) { row.push(current.trim()); current = ''; }
+    else if ((char === '\n' || char === '\r') && !inQuotes) { if (current || row.length) { row.push(current.trim()); rows.push(row); row = []; current = ''; } }
+    else { current += char; }
   }
+  if (current || row.length) { row.push(current.trim()); rows.push(row); }
+  return rows;
 }
 
-function renderDayTabs() {
-  const cats = Object.keys(DAY_REGIMES);
-  const el = document.getElementById('day-tabs');
-  el.innerHTML = cats.map((c, i) => `<button class="tab ${i===0?'active':''}" data-cat="${c}">${DAY_REGIMES[c].label}</button>`).join('');
-}
-
-/* =========================================================
-   РАСПИСАНИЕ: ВЕСЬ ДЕНЬ С АВТОПРОКРУТКОЙ
-   ========================================================= */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpO1V6Oua0cIeOb65wda9z2kK4dg07mDGVZnnzRTnCBPv2YO7RWj1md4GVoHWrvW2b/exec';
-
-let allLessons = [];
-let activeLessonGroup = null;
-let uniqueGroups = [];
-
-async function loadLessons() {
-  const el = document.getElementById('lesson-content');
-  el.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка данных...</div></div>`;
+async function loadData() {
+  const elL = document.getElementById('lesson-content');
+  const elD = document.getElementById('day-content');
+  elL.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
+  elD.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
   
   try {
-    const response = await fetch(APPS_SCRIPT_URL);
-    if (!response.ok) throw new Error('Ошибка сети');
+    // СКАЧИВАЕМ РАСПИСАНИЕ
+    const schedRes = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SCHEDULE_GID}`);
+    const schedText = await schedRes.text();
+    const schedRows = parseCSV(schedText);
     
-    const json = await response.json();
-    if (json.error) throw new Error(json.error);
-    
-    const rows = json.data;
     allLessons = [];
-    
-    for (let i = 1; i < rows.length; i++) {
-      const r = rows[i];
-      if (!r[0] || r[0] === '' || String(r[0]).includes('Date')) continue;
-      
-      allLessons.push({
-        group: String(r[0]).trim(),
-        day: String(r[1] || '').trim(),
-        half: String(r[2] || '').trim().toUpperCase(),
-        subject: r[3] || '',
-        type: r[4] || 'ОД',
-        isHall: r[5] === true || r[5] === 'TRUE'
-      });
+    for (let i = 1; i < schedRows.length; i++) {
+      const r = schedRows[i];
+      if (!r[0] || r[0] === '' || r[0].includes('Date')) continue;
+      allLessons.push({ group: r[0], day: r[1] || '', half: (r[2] || '').toUpperCase(), subject: r[3] || '', type: r[4] || 'ОД', isHall: r[5] === 'TRUE' });
     }
 
-    if (allLessons.length === 0) throw new Error('Список занятий пуст. Проверьте столбцы.');
+    // СКАЧИВАЕМ РЕЖИМ ДНЯ
+    const regimeRes = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${REGIME_GID}`);
+    const regimeText = await regimeRes.text();
+    const regimeRows = parseCSV(regimeText);
+
+    allRegime = [];
+    for (let i = 1; i < regimeRows.length; i++) {
+      const r = regimeRows[i];
+      if (!r[1] || r[2] === '№' || r[3] === 'Режимный момент') continue;
+      allRegime.push({ season: r[0], group: r[1], order: Number(r[2]) || 99, action: r[3], start: parseDateToTime(r[4]), end: parseDateToTime(r[5]) });
+    }
 
     uniqueGroups = [...new Set(allLessons.map(l => l.group))].sort();
-    
-    if (!activeLessonGroup || !uniqueGroups.includes(activeLessonGroup)) {
-      activeLessonGroup = uniqueGroups[0];
-    }
-    
-    renderLessonTabs();
-    renderLesson();
-    
+    if (!activeLessonGroup || !uniqueGroups.includes(activeLessonGroup)) activeLessonGroup = uniqueGroups[0];
+
+    regimeGroups = [...new Set(allRegime.map(l => l.group))];
+    if (regimeGroups.length > 0 && !regimeGroups.includes(activeDayGroup)) activeDayGroup = regimeGroups[0];
+
+    renderLessonTabs(); renderDayTabs(); renderLesson(); renderDay();
   } catch (err) {
     console.error(err);
-    el.innerHTML = `
-      <div class="waiting">
-        <div>
-          <div class="big">⚠️</div>
-          <div style="color:#c92a2a; font-size:14px; margin-bottom:10px;">Ошибка данных</div>
-          <div style="font-size:12px; font-weight:normal; background:rgba(255,0,0,0.05); padding:10px; border-radius:8px; border:1px solid rgba(255,0,0,0.2);">
-            <b>Причина:</b><br>${err.message}
-          </div>
-          <button class="refresh-btn" onclick="loadLessons()" style="background:#4dabf7; padding:8px 16px; border-radius:20px; color:#fff; margin-top:10px;">Попробовать снова</button>
-        </div>
-      </div>`;
+    elL.innerHTML = `<div class="waiting"><div><div class="big">⚠️</div>Ошибка загрузки. Проверьте GID.</div></div>`;
+    elD.innerHTML = `<div class="waiting"><div><div class="big">⚠️</div>Ошибка загрузки. Проверьте GID.</div></div>`;
   }
 }
 
-function renderLessonTabs() {
-  const el = document.getElementById('lesson-tabs');
-  if (!uniqueGroups.length) return;
-  el.innerHTML = uniqueGroups.map(g => `<button class="tab ${g===activeLessonGroup?'active':''}" data-g="${g}">${g}</button>`).join('');
-  el.querySelectorAll('.tab').forEach(b => b.onclick = () => { 
-    activeLessonGroup = b.dataset.g; 
-    renderLessonTabs(); 
-    renderLesson(); 
-  });
-}
+function renderLessonTabs() { const el = document.getElementById('lesson-tabs'); if (!uniqueGroups.length) return; el.innerHTML = uniqueGroups.map(g => `<button class="tab ${g===activeLessonGroup?'active':''}" data-g="${g}">${g}</button>`).join(''); el.querySelectorAll('.tab').forEach(b => b.onclick = () => { activeLessonGroup = b.dataset.g; renderLessonTabs(); renderLesson(); }); }
+function renderDayTabs() { const el = document.getElementById('day-tabs'); if (!regimeGroups.length) return; el.innerHTML = regimeGroups.map(g => `<button class="tab ${g===activeDayGroup?'active':''}" data-g="${g}">${g}</button>`).join(''); el.querySelectorAll('.tab').forEach(b => b.onclick = () => { activeDayGroup = b.dataset.g; renderDayTabs(); renderDay(); }); }
 
-function renderLesson() {
-  const el = document.getElementById('lesson-content');
-  const now = getMoscowNow();
-  
-  const dayIdx = now.getDay();
-  if (dayIdx === 0 || dayIdx === 6) {
-    el.innerHTML = `<div class="waiting"><div><div class="big">🌞</div>Выходной день</div></div>`;
-    return;
-  }
-  
-  const daysMap = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
-  const currentDay = daysMap[dayIdx];
-  const currentHour = now.getHours();
-  const currentHalf = currentHour < 12 ? 'I' : 'II';
+function renderLesson() { 
+  const el = document.getElementById('lesson-content'); 
+  const now = getMoscowNow(); 
+  const dayIdx = now.getDay(); 
+  if (dayIdx === 0 || dayIdx === 6) { el.innerHTML = `<div class="waiting"><div><div class="big">🌞</div>Выходной</div></div>`; return; } 
+  const daysMap = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота']; 
+  const currentDay = daysMap[dayIdx]; 
+  const currentHalf = now.getHours() < 12 ? 'I' : 'II'; 
+  const cleanStr = (s) => String(s).toLowerCase().replace(/[«»"']/g, '').replace(/\s+/g, ' ').trim(); 
+  const targetGroup = cleanStr(activeLessonGroup); 
+  const todayLessons = allLessons.filter(l => cleanStr(l.group).includes(targetGroup) || targetGroup.includes(cleanStr(l.group))).filter(l => l.day.toLowerCase() === currentDay.toLowerCase()); 
+  if (todayLessons.length === 0) { el.innerHTML = `<div class="waiting"><div><div class="big">🎨</div>На ${currentDay} занятий нет</div></div>`; return; } 
+  const sorted = todayLessons.sort((a, b) => a.half.localeCompare(b.half)); 
+  let html = ''; let lastHalf = ''; 
+  sorted.forEach(l => { 
+    if (l.half !== lastHalf) { 
+      const isActive = l.half === currentHalf; 
+      html += `<div class="half-divider ${isActive ? 'active-half' : ''}"><span>${l.half === 'I' ? '🌅' : '🌇'}</span> <span>${l.half} половина дня</span>${isActive ? '<span style="margin-left:auto; font-size:9px;">(Сейчас)</span>' : ''}</div>`; 
+      lastHalf = l.half; 
+    } 
+    let badgeCls = 'od'; let titleText = 'ОД'; 
+    if (l.type === 'ОДРМ') { badgeCls = 'odrm'; titleText = 'КП'; } 
+    else if (l.type === 'СД') { badgeCls = 'sd'; titleText = 'СД'; } 
+    else if (l.type === 'КП') { badgeCls = 'kp'; titleText = 'КП'; } 
+    else if (l.type === 'КРР') { badgeCls = 'hall'; titleText = 'КРР'; } 
+    html += `<div class="lesson-card ${(currentHalf === 'II' && l.half === 'I') ? 'past' : ''}"><div class="l-area">${l.subject}</div><div class="l-title">${titleText}</div><div class="l-meta"><span class="badge ${badgeCls}">${l.type}</span>${l.isHall ? '<span class="badge hall">🏛 В зале</span>' : ''}</div></div>`; 
+  }); 
+  el.innerHTML = html; 
 
-  const cleanStr = (s) => String(s).toLowerCase().replace(/[«»"']/g, '').replace(/\s+/g, ' ').trim();
-  const targetGroup = cleanStr(activeLessonGroup);
-
-  // Получаем ВСЕ занятия на сегодня (и I, и II половину)
-  const todayLessons = allLessons.filter(l => {
-    const lGroup = cleanStr(l.group);
-    const isGroupMatch = lGroup === targetGroup || lGroup.includes(targetGroup) || targetGroup.includes(lGroup);
-    if (!isGroupMatch) return false;
-    return l.day.toLowerCase() === currentDay.toLowerCase();
-  });
-
-  if (todayLessons.length === 0) {
-    el.innerHTML = `<div class="waiting"><div><div class="big">🎨</div>На ${currentDay} занятий нет</div></div>`;
-    return;
-  }
-
-  // Сортируем: сначала I половина, потом II
-  const sorted = todayLessons.sort((a, b) => a.half.localeCompare(b.half));
-  
-  let html = '';
-  let lastHalf = '';
-
-  sorted.forEach(l => {
-    // Выводим заголовок при смене половины дня
-    if (l.half !== lastHalf) {
-      const isActive = l.half === currentHalf;
-      const icon = l.half === 'I' ? '🌅' : '🌇';
-      const label = l.half === 'I' ? 'I половина дня' : 'II половина дня';
-      
-      html += `<div class="half-divider ${isActive ? 'active-half' : ''}">
-        <span>${icon}</span> <span>${label}</span>
-        ${isActive ? '<span style="margin-left:auto; font-size:9px; opacity:0.8;">(Сейчас)</span>' : ''}
-      </div>`;
-      lastHalf = l.half;
-    }
-
-    let badgeCls = 'od';
-    let titleText = 'Образовательная деятельность';
-    if (l.type === 'ОДРМ') { badgeCls = 'odrm'; titleText = 'Культурная практика'; }
-    else if (l.type === 'СД') { badgeCls = 'sd'; titleText = 'Самостоятельная деятельность'; }
-    else if (l.type === 'КП') { badgeCls = 'kp'; titleText = 'Культурная практика'; }
-    else if (l.type.includes('Коррекц')) { badgeCls = 'hall'; titleText = 'Коррекционная работа'; }
-
-    // Если занятие в прошедшей половине дня, делаем его блеклым
-    const isPast = (currentHalf === 'II' && l.half === 'I');
-    const cardClass = isPast ? 'lesson-card past' : 'lesson-card';
-
-    html += `<div class="${cardClass}" style="border-left-color:${getSubjectColor(l.subject)}">
-      <div class="l-area">${l.subject}</div>
-      <div class="l-title">${titleText}</div>
-      <div class="l-meta">
-        <span class="badge ${badgeCls}">${l.type}</span>
-        ${l.isHall ? '<span class="badge hall">🏛 В зале</span>' : ''}
-      </div>
-    </div>`;
-  });
-
-  el.innerHTML = html;
-
-  // АВТОПРОКРУТКА: скроллим к активному разделителю (текущей половине дня)
+  // Плавная прокрутка к текущей половине дня
   setTimeout(() => {
     const activeDivider = el.querySelector('.half-divider.active-half');
-    if (activeDivider) {
-      activeDivider.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (activeDivider) activeDivider.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
+
+function renderDay() { 
+  const el = document.getElementById('day-content'); 
+  if (!allRegime.length) return; 
+  const now = getMoscowNow(); 
+  const isSummer = (now.getMonth() + 1 >= 6 && now.getMonth() + 1 <= 8); 
+  const targetSeason = isSummer ? 'Летний' : 'Учебный'; 
+  const curMin = minutesOfDay(now); 
+  const groupRegime = allRegime.filter(r => r.group === activeDayGroup && r.season === targetSeason); 
+  if (groupRegime.length === 0) { el.innerHTML = `<div class="waiting"><div><div class="big">📅</div>Нет данных</div></div>`; return; } 
+  groupRegime.sort((a, b) => a.order - b.order); 
+  
+  let activeIndex = -1;
+  for (let i = 0; i < groupRegime.length; i++) {
+    const item = groupRegime[i];
+    if (!item.start) continue;
+    const sParts = item.start.split(':'); 
+    const eParts = item.end ? item.end.split(':') : [];
+    if (sParts.length >= 2) { 
+      const sMin = t(Number(sParts[0]), Number(sParts[1])); 
+      if (eParts.length >= 2) { 
+        const eMin = t(Number(eParts[0]), Number(eParts[1])); 
+        if (curMin >= sMin && curMin < eMin) {
+          activeIndex = i;
+          break;
+        }
+      } else {
+        if (curMin >= sMin) activeIndex = i;
+      }
     }
-  }, 100);
+  }
+
+  if (activeIndex === -1) {
+    for (let i = groupRegime.length - 1; i >= 0; i--) {
+      const item = groupRegime[i];
+      if (!item.start) continue;
+      const sParts = item.start.split(':');
+      if (sParts.length >= 2) {
+        const sMin = t(Number(sParts[0]), Number(sParts[1]));
+        if (curMin >= sMin) {
+          activeIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
+  let html = '<div class="day-list" style="display:flex; flex-direction:column; gap:6px;">'; 
+  
+  groupRegime.forEach((item, index) => { 
+    const isActive = (index === activeIndex);
+    let progress = 0;
+    
+    if (isActive && item.start && item.end) {
+      const sParts = item.start.split(':');
+      const eParts = item.end.split(':');
+      if (sParts.length >= 2 && eParts.length >= 2) {
+        const sMin = t(Number(sParts[0]), Number(sParts[1]));
+        const eMin = t(Number(eParts[0]), Number(eParts[1]));
+        if (eMin > sMin) {
+          progress = Math.round(((curMin - sMin) / (eMin - sMin)) * 100);
+          progress = Math.max(0, Math.min(100, progress));
+        }
+      }
+    }
+    
+    const timeDisplay = item.end ? `${item.start}–${item.end}` : item.start;
+    html += `<div class="moment ${isActive ? 'active' : ''}"><div class="m-time">${timeDisplay}</div><div class="m-name">${item.action}</div>${isActive ? `<div class="m-progress"><div style="width:${progress}%"></div></div>` : ''}</div>`; 
+  }); 
+  el.innerHTML = html + '</div>'; 
+
+  // Плавная прокрутка к текущему режимному моменту
+  setTimeout(() => {
+    const activeMoment = el.querySelector('.moment.active');
+    if (activeMoment) activeMoment.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 50);
 }
 
-function getSubjectColor(subj) {
-  if (subj.includes('Социально')) return '#4dabf7';
-  if (subj.includes('Познавательное')) return '#51cf66';
-  if (subj.includes('Речевое')) return '#ff8a3d';
-  if (subj.includes('Художественно')) return '#cc5de8';
-  if (subj.includes('Физическое')) return '#ff6b6b';
-  return '#4dabf7';
-}
-
-/* =========================================================
-   ЗАПУСК
-   ========================================================= */
-renderDayTabs();
-renderClock();
-loadLessons();
-
-setInterval(renderClock, 1000);
+renderClock(); loadData(); setInterval(renderClock, 1000);
 </script>
 </body>
 </html>
