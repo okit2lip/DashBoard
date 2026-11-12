@@ -44,6 +44,16 @@
   .waiting { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; color: var(--text-muted); font-size: 14px; font-weight: 600; }
   .waiting .big { font-size: 36px; margin-bottom: 10px; }
   .refresh-btn { background: transparent; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; transition: 0.2s; } .refresh-btn:hover { opacity: 1; transform: rotate(90deg); }
+
+  /* Стили для питания */
+  .food-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: var(--radius-sm); background: linear-gradient(135deg, #ffd8a8, #ffec99); margin-bottom: 10px; flex-shrink: 0; }
+  .food-header .f-name { font-weight: 800; font-size: 15px; color: #7a4a00; }
+  .food-header .f-time { font-size: 13px; color: #7a4a00; font-weight: 600; }
+  .food-subtitle { font-size: 11px; font-weight: 800; color: var(--text-main); margin: 10px 0 4px; text-transform: uppercase; background: rgba(255,255,255,0.8); padding: 4px 8px; border-radius: 6px; display: inline-block; border-left: 3px solid #4dabf7; }
+  .food-items { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: none; margin-bottom: 8px; }
+  .food-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 10px; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.02); }
+  .food-item .fi-name { font-weight: 500; }
+  .food-item .fi-weight { color: var(--text-muted); font-weight: 600; white-space: nowrap; margin-left: 8px; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -79,20 +89,63 @@
 const SHEET_ID = '1pNStzDFpQCoFSE0ie_6-ma81DXDD0Ue-Tat6YXLiE18';
 const SCHEDULE_GID = '1031367568'; 
 const REGIME_GID = '1135698480'; 
+const MENU_GID = '1072523325';
 
-// ПРАВИЛЬНЫЙ ПАРСЕР ВРЕМЕНИ (не обрезает минуты)
+const MENU_START_DATE = '2026-10-30'; 
+
+const HOLIDAYS = [
+  '2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', '2026-01-05', '2026-01-06', '2026-01-07', '2026-01-08', '2026-01-09', '2026-01-10', '2026-01-11',
+  '2026-02-21', '2026-02-22', '2026-02-23',
+  '2026-03-07', '2026-03-08', '2026-03-09',
+  '2026-05-01', '2026-05-02', '2026-05-03', '2026-05-09', '2026-05-10', '2026-05-11',
+  '2026-06-12', '2026-06-13', '2026-06-14',
+  '2026-11-04',
+  '2026-12-31'
+];
+
+function isWorkingDay(date) {
+  const dayOfWeek = date.getDay();
+  if (dayOfWeek === 0 || dayOfWeek === 6) return false;
+  const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, '0'); const d = String(date.getDate()).padStart(2, '0');
+  return !HOLIDAYS.includes(`${y}-${m}-${d}`);
+}
+
+function isWorkTime(now) {
+  const hours = now.getHours();
+  return hours >= 7 && hours < 19;
+}
+
+function getMenuDay(now) {
+  let currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  while (!isWorkingDay(currentDate)) {
+    currentDate.setDate(currentDate.getDate() - 1);
+  }
+  
+  let startDate = new Date(MENU_START_DATE + 'T00:00:00');
+  while (!isWorkingDay(startDate)) {
+    startDate.setDate(startDate.getDate() + 1);
+  }
+
+  let workDaysCount = 0;
+  const cursor = new Date(startDate);
+  
+  while (cursor <= currentDate) {
+    if (isWorkingDay(cursor)) workDaysCount++;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  
+  let menuDay = (workDaysCount - 1) % 10;
+  if (menuDay < 0) menuDay += 10; 
+  return menuDay + 1; 
+}
+
 function parseDateToTime(dateStr) {
   if (!dateStr) return '';
   const str = String(dateStr).trim();
-  
-  // Если это объект Date (содержит 'T')
   if (str.includes('T')) {
     const d = new Date(str);
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
-  
-  // Если это просто строка (например, "13:00:00" или "13:00")
-  // Регулярное выражение ищет ЧЧ:ММ и игнорирует всё, что идет после (секунды)
   const match = str.match(/(\d{1,2}):(\d{2})/);
   if (match) {
     const h = parseInt(match[1]);
@@ -116,7 +169,9 @@ function renderClock() {
   document.getElementById('clock-season').textContent = isSummer ? 'Летний период' : 'Учебный год';
 }
 
-let allLessons = []; let allRegime = []; let activeLessonGroup = null; let activeDayGroup = '2 младшая'; let uniqueGroups = []; let regimeGroups = [];
+let allLessons = []; let allRegime = []; let allMenu = []; 
+let activeLessonGroup = null; let activeDayGroup = '2 младшая'; 
+let uniqueGroups = []; let regimeGroups = [];
 
 function parseCSV(text) {
   const rows = []; let current = ''; let inQuotes = false; let row = [];
@@ -134,11 +189,22 @@ function parseCSV(text) {
 async function loadData() {
   const elL = document.getElementById('lesson-content');
   const elD = document.getElementById('day-content');
+  const elF = document.getElementById('food-content');
+  
+  const now = getMoscowNow();
+  const workTime = isWorkTime(now) && isWorkingDay(now);
+  
+  if (!workTime) {
+    const stub = `<div class="waiting"><div><div class="big">😴</div>Скоро встретимся</div></div>`;
+    elL.innerHTML = stub; elD.innerHTML = stub; elF.innerHTML = stub;
+    return;
+  }
+
   elL.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
   elD.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
+  elF.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
   
   try {
-    // СКАЧИВАЕМ РАСПИСАНИЕ
     const schedRes = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SCHEDULE_GID}`);
     const schedText = await schedRes.text();
     const schedRows = parseCSV(schedText);
@@ -150,7 +216,6 @@ async function loadData() {
       allLessons.push({ group: r[0], day: r[1] || '', half: (r[2] || '').toUpperCase(), subject: r[3] || '', type: r[4] || 'ОД', isHall: r[5] === 'TRUE' });
     }
 
-    // СКАЧИВАЕМ РЕЖИМ ДНЯ
     const regimeRes = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${REGIME_GID}`);
     const regimeText = await regimeRes.text();
     const regimeRows = parseCSV(regimeText);
@@ -162,17 +227,28 @@ async function loadData() {
       allRegime.push({ season: r[0], group: r[1], order: Number(r[2]) || 99, action: r[3], start: parseDateToTime(r[4]), end: parseDateToTime(r[5]) });
     }
 
+    const menuRes = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${MENU_GID}`);
+    const menuText = await menuRes.text();
+    const menuRows = parseCSV(menuText);
+
+    allMenu = [];
+    for (let i = 1; i < menuRows.length; i++) {
+      const r = menuRows[i];
+      if (!r[0] || r[1] === 'Прием_пищи') continue; 
+      allMenu.push({ day: r[0], meal: r[1], dish: r[2], weight: r[3] });
+    }
+
     uniqueGroups = [...new Set(allLessons.map(l => l.group))].sort();
     if (!activeLessonGroup || !uniqueGroups.includes(activeLessonGroup)) activeLessonGroup = uniqueGroups[0];
 
     regimeGroups = [...new Set(allRegime.map(l => l.group))];
     if (regimeGroups.length > 0 && !regimeGroups.includes(activeDayGroup)) activeDayGroup = regimeGroups[0];
 
-    renderLessonTabs(); renderDayTabs(); renderLesson(); renderDay();
+    renderLessonTabs(); renderDayTabs(); renderLesson(); renderDay(); renderMenu();
   } catch (err) {
     console.error(err);
-    elL.innerHTML = `<div class="waiting"><div><div class="big">⚠️</div>Ошибка загрузки. Проверьте GID.</div></div>`;
-    elD.innerHTML = `<div class="waiting"><div><div class="big">⚠️</div>Ошибка загрузки. Проверьте GID.</div></div>`;
+    const errHtml = `<div class="waiting"><div><div class="big">⚠️</div>Ошибка загрузки</div></div>`;
+    elL.innerHTML = errHtml; elD.innerHTML = errHtml; elF.innerHTML = errHtml;
   }
 }
 
@@ -182,8 +258,9 @@ function renderDayTabs() { const el = document.getElementById('day-tabs'); if (!
 function renderLesson() { 
   const el = document.getElementById('lesson-content'); 
   const now = getMoscowNow(); 
+  if (!isWorkTime(now) || !isWorkingDay(now)) { el.innerHTML = `<div class="waiting"><div><div class="big">😴</div>Скоро встретимся</div></div>`; return; }
+  
   const dayIdx = now.getDay(); 
-  if (dayIdx === 0 || dayIdx === 6) { el.innerHTML = `<div class="waiting"><div><div class="big">🌞</div>Выходной</div></div>`; return; } 
   const daysMap = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота']; 
   const currentDay = daysMap[dayIdx]; 
   const currentHalf = now.getHours() < 12 ? 'I' : 'II'; 
@@ -208,7 +285,6 @@ function renderLesson() {
   }); 
   el.innerHTML = html; 
 
-  // Плавная прокрутка к текущей половине дня
   setTimeout(() => {
     const activeDivider = el.querySelector('.half-divider.active-half');
     if (activeDivider) activeDivider.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -219,6 +295,8 @@ function renderDay() {
   const el = document.getElementById('day-content'); 
   if (!allRegime.length) return; 
   const now = getMoscowNow(); 
+  if (!isWorkTime(now) || !isWorkingDay(now)) { el.innerHTML = `<div class="waiting"><div><div class="big">😴</div>Скоро встретимся</div></div>`; return; }
+  
   const isSummer = (now.getMonth() + 1 >= 6 && now.getMonth() + 1 <= 8); 
   const targetSeason = isSummer ? 'Летний' : 'Учебный'; 
   const curMin = minutesOfDay(now); 
@@ -236,10 +314,7 @@ function renderDay() {
       const sMin = t(Number(sParts[0]), Number(sParts[1])); 
       if (eParts.length >= 2) { 
         const eMin = t(Number(eParts[0]), Number(eParts[1])); 
-        if (curMin >= sMin && curMin < eMin) {
-          activeIndex = i;
-          break;
-        }
+        if (curMin >= sMin && curMin < eMin) { activeIndex = i; break; }
       } else {
         if (curMin >= sMin) activeIndex = i;
       }
@@ -253,10 +328,7 @@ function renderDay() {
       const sParts = item.start.split(':');
       if (sParts.length >= 2) {
         const sMin = t(Number(sParts[0]), Number(sParts[1]));
-        if (curMin >= sMin) {
-          activeIndex = i;
-          break;
-        }
+        if (curMin >= sMin) { activeIndex = i; break; }
       }
     }
   }
@@ -285,15 +357,77 @@ function renderDay() {
   }); 
   el.innerHTML = html + '</div>'; 
 
-  // Плавная прокрутка к текущему режимному моменту
   setTimeout(() => {
     const activeMoment = el.querySelector('.moment.active');
     if (activeMoment) activeMoment.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, 50);
 }
 
+function renderMenu() {
+  const el = document.getElementById('food-content');
+  const now = getMoscowNow();
+  
+  if (!isWorkTime(now) || !isWorkingDay(now)) { el.innerHTML = `<div class="waiting"><div><div class="big">😴</div>Скоро встретимся</div></div>`; return; }
+  
+  if (!allMenu.length) { el.innerHTML = `<div class="waiting"><div><div class="big">🍲</div>Меню нет</div></div>`; return; }
+
+  const curMin = minutesOfDay(now);
+  
+  const meals = [
+    { key: 'Завтрак', s: t(8,30), e: t(9,0) },
+    { key: '2-ой завтрак', s: t(10,10), e: t(10,40) },
+    { key: 'Обед', s: t(12,20), e: t(13,0) },
+    { key: 'Полдник', s: t(15,30), e: t(16,0) },
+    { key: 'Ужин', s: t(16,30), e: t(17,0) },
+  ];
+  
+  let currentMeal = meals.find(m => curMin >= m.s && curMin < m.e);
+  if (!currentMeal) currentMeal = meals.find(m => curMin < m.s) || meals[meals.length-1];
+
+  const menuDay = getMenuDay(now);
+  const targetDayString = `День ${menuDay}`;
+
+  let html = `<div class="food-header">
+    <div class="f-name">🍴 ${currentMeal.key} <span style="font-size:0.7em; opacity:0.7; font-weight:normal;">(День ${menuDay})</span></div>
+    <div class="f-time">${pad(Math.floor(currentMeal.s/60))}:${pad(currentMeal.s%60)}</div>
+  </div>`;
+
+  const groupsToShow = ['Ясли', 'Сад', 'Оздоровительная']; 
+  let hasDishes = false;
+
+  groupsToShow.forEach(groupName => {
+    const dishes = allMenu.filter(m => 
+      m.day.includes(groupName) && 
+      m.day.includes(targetDayString) && 
+      m.meal === currentMeal.key
+    );
+
+    if (dishes.length > 0) {
+      hasDishes = true;
+      let color = '#4dabf7'; 
+      if (groupName === 'Ясли') color = '#a78bfa';
+      else if (groupName === 'Оздоровительная') color = '#51cf66';
+
+      html += `<div class="food-subtitle" style="border-left-color: ${color};">${groupName}</div>`;
+      html += `<div class="food-items">`;
+      
+      dishes.forEach(d => {
+        const w = d.weight.replace(/\.0$/, '').replace(/\./g, ',');
+        html += `<div class="food-item"><span class="fi-name">${d.dish}</span><span class="fi-weight">${w} г</span></div>`;
+      });
+      
+      html += `</div>`;
+    }
+  });
+
+  if (!hasDishes) {
+    html += `<div class="waiting"><div><div class="big">🍲</div>На этот день меню нет</div></div>`;
+  }
+
+  el.innerHTML = html;
+}
+
 renderClock(); loadData(); setInterval(renderClock, 1000);
 </script>
 </body>
 </html>
-
