@@ -10,15 +10,65 @@
   html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--text-main); background: #e8eefc; overflow: hidden; font-size: 16px; }
   body::before { content: ""; position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at 15% 20%, #a5d8ff 0%, transparent 40%), radial-gradient(circle at 85% 15%, #ffd8a8 0%, transparent 40%), radial-gradient(circle at 20% 85%, #b2f2bb 0%, transparent 40%), radial-gradient(circle at 80% 80%, #eebefa 0%, transparent 40%), linear-gradient(135deg, #f1f3ff 0%, #e3ecff 100%); }
   body { display: flex; flex-direction: column; }
-  header.topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: var(--pad); margin: var(--gap) var(--gap) 0; background: var(--glass-bg-strong); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--glass-shadow); gap: var(--gap); flex-shrink: 0; }
-  .brand { display: flex; align-items: center; gap: 12px; justify-self: start; }
-  .brand .logo { width: 60px; height: 60px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-size: 30px; }
-  .brand h1 { font-size: 20px; font-weight: 700; } .brand p { font-size: 13px; color: var(--text-muted); }
-  .clock-time-center { justify-self: center; text-align: center; }
-  .clock-time-center .time { font-size: 48px; font-weight: 800; line-height: 1; background: linear-gradient(135deg, #6c5ce7, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .clock-info-right { justify-self: end; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .clock-info-right .date { font-size: 15px; font-weight: 600; color: #636e72; }
-  .clock-info-right .season { font-size: 12px; font-weight: 600; color: #0984e3; background: rgba(9, 132, 227, 0.1); padding: 4px 10px; border-radius: 20px; }
+
+  /* ===== ХЕДЕР (как в дашборде «Питание») ===== */
+  header.topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 32px; margin: 18px 22px 0;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius); box-shadow: var(--glass-shadow);
+    flex-shrink: 0;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .logo {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(77,171,247,0.4);
+    overflow: hidden;
+  }
+  .brand .logo img { width: 85%; height: 85%; object-fit: contain; }
+  .brand h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .brand p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  .clock { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+  .clock .time {
+    font-size: 34px; font-weight: 800; letter-spacing: -1px;
+    background: linear-gradient(135deg, #4dabf7, #cc5de8);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .clock .date { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+  .clock .season {
+    display: inline-block; margin-top: 6px; font-size: 11px;
+    padding: 3px 10px; border-radius: 999px;
+    background: rgba(77,171,247,0.15); color: #1864ab; font-weight: 600;
+  }
+  .sync-status {
+    display: inline-block; margin-top: 6px; margin-left: 6px; font-size: 11px;
+    padding: 3px 10px; border-radius: 999px; font-weight: 600;
+    background: rgba(16,185,129,0.15); color: #087f5b;
+  }
+  .sync-status.loading { background: rgba(245,158,11,0.15); color: #997404; }
+  .sync-status.err { background: rgba(239,68,68,0.15); color: #c92a2a; }
+
+  /* Пузыри на фоне */
+  .bubble {
+    position: fixed; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.1));
+    filter: blur(2px); z-index: -1;
+    animation: floatUp 18s ease-in-out infinite; pointer-events: none;
+  }
+  @keyframes floatUp {
+    0%,100% { transform: translateY(0) scale(1); opacity: 0.5; }
+    50% { transform: translateY(-40px) scale(1.1); opacity: 0.8; }
+  }
+  /* ===== /ХЕДЕР ===== */
+
   .dashboard { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: var(--gap); padding: var(--gap); min-height: 0; }
   .widget { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--glass-shadow); padding: var(--pad); display: flex; flex-direction: column; overflow: hidden; position: relative; height: 100%; min-height: 0; }
   .widget h2 { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
@@ -70,10 +120,30 @@
 </style>
 </head>
 <body>
+
+<div class="bubble" style="width:120px;height:120px;top:10%;left:5%;animation-delay:0s;"></div>
+<div class="bubble" style="width:80px;height:80px;top:60%;left:90%;animation-delay:4s;"></div>
+<div class="bubble" style="width:150px;height:150px;top:75%;left:15%;animation-delay:8s;"></div>
+<div class="bubble" style="width:60px;height:60px;top:25%;left:80%;animation-delay:2s;"></div>
+
 <header class="topbar">
-  <div class="brand"><div class="logo">🐳</div><div><h1>Облачный Кит</h1><p>ДОУ № 2 г. Липецка</p></div></div>
-  <div class="clock-time-center"><div class="time" id="clock-time">--:--:--</div></div>
-  <div class="clock-info-right"><div class="date" id="clock-date">—</div><div class="season" id="clock-season">—</div></div>
+  <div class="brand">
+    <div class="logo">
+      <img src="logo.png" alt="Логотип">
+    </div>
+    <div>
+      <h1>Облачный Кит</h1>
+      <p>ДОУ № 2 г. Липецка</p>
+    </div>
+  </div>
+  <div class="clock">
+    <div class="time" id="clock-time">--:--:--</div>
+    <div class="date" id="clock-date">—</div>
+    <div>
+      <span class="season" id="clock-season">—</span>
+      <span class="sync-status loading" id="sync-status">⏳ загрузка</span>
+    </div>
+  </div>
 </header>
 
 <main class="dashboard">
@@ -176,13 +246,30 @@ function getMoscowNow() { const now = new Date(); const fmt = new Intl.DateTimeF
 function pad(n){ return n < 10 ? '0'+n : ''+n; }
 function minutesOfDay(d){ return d.getHours()*60 + d.getMinutes(); }
 
+/* ===== ЧАСЫ + СТАТУС СИНХРОНИЗАЦИИ ===== */
+function setSyncStatus(cls, txt) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.className = 'sync-status ' + cls;
+  el.textContent = txt;
+}
+
 function renderClock() {
   const now = getMoscowNow();
   document.getElementById('clock-time').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   document.getElementById('clock-date').textContent = `${WEEKDAYS_RU[now.getDay()]}, ${now.getDate()} ${MONTHS_RU[now.getMonth()]} ${now.getFullYear()}`;
   const isSummer = (now.getMonth() + 1 >= 6 && now.getMonth() + 1 <= 8);
   document.getElementById('clock-season').textContent = isSummer ? 'Летний период' : 'Учебный год';
+
+  if (window.__syncError) {
+    setSyncStatus('err', '✕ ошибка');
+  } else if (window.__lastSyncTime) {
+    const sec = Math.round((Date.now() - window.__lastSyncTime) / 1000);
+    const ago = sec < 5 ? 'только что' : sec < 60 ? `${sec} сек` : `${Math.floor(sec/60)} мин`;
+    setSyncStatus('ok', `● данные ${ago} назад`);
+  }
 }
+/* ===== /ЧАСЫ + СТАТУС ===== */
 
 let allLessons = []; let allRegime = []; let allMenu = []; let allEvents = [];
 let activeLessonGroup = null; let activeDayGroup = '2 младшая'; 
@@ -207,12 +294,17 @@ async function loadData() {
   const elF = document.getElementById('food-content');
   const elE = document.getElementById('calendar-content');
   
+  setSyncStatus('loading', '⏳ обновление');
+  window.__syncError = false;
+
   const now = getMoscowNow();
   const workTime = isWorkTime(now) && isWorkingDay(now);
   
   if (!workTime) {
     const stub = `<div class="waiting"><div><div class="big">😴</div>Скоро встретимся</div></div>`;
     elL.innerHTML = stub; elD.innerHTML = stub; elF.innerHTML = stub; elE.innerHTML = stub;
+    window.__lastSyncTime = Date.now();
+    setSyncStatus('ok', '● данные только что');
     return;
   }
 
@@ -281,8 +373,13 @@ async function loadData() {
     if (regimeGroups.length > 0 && !regimeGroups.includes(activeDayGroup)) activeDayGroup = regimeGroups[0];
 
     renderLessonTabs(); renderDayTabs(); renderLesson(); renderDay(); renderMenu(); renderEvents();
+
+    window.__lastSyncTime = Date.now();
+    setSyncStatus('ok', '● данные только что');
   } catch (err) {
     console.error(err);
+    window.__syncError = true;
+    setSyncStatus('err', '✕ ошибка');
     const errHtml = `<div class="waiting"><div><div class="big">⚠️</div>Ошибка загрузки</div></div>`;
     elL.innerHTML = errHtml; elD.innerHTML = errHtml; elF.innerHTML = errHtml; elE.innerHTML = errHtml;
   }
@@ -525,6 +622,8 @@ function renderEvents() {
 }
 
 renderClock(); loadData(); setInterval(renderClock, 1000);
+setInterval(loadData, 5 * 60_000);                              // данные раз в 5 минут
+setInterval(() => { renderLesson(); renderDay(); }, 60_000);    // половина дня / режим
 </script>
 </body>
 </html>
