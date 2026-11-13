@@ -54,6 +54,19 @@
   .food-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 10px; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.02); }
   .food-item .fi-name { font-weight: 500; }
   .food-item .fi-weight { color: var(--text-muted); font-weight: 600; white-space: nowrap; margin-left: 8px; font-size: 12px; }
+
+  /* Стили для событий */
+  .cal-item { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: var(--radius-sm); background: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 6px; }
+  .cal-item.today { background: linear-gradient(135deg, #ff8a3d, #ff6b6b); color: #fff; }
+  .cal-date { text-align: center; min-width: 45px; padding: 4px; border-radius: 8px; background: rgba(0,0,0,0.05); flex-shrink: 0; }
+  .cal-item.today .cal-date { background: rgba(255,255,255,0.2); }
+  .cal-date .d { font-size: 16px; font-weight: 800; line-height: 1; }
+  .cal-date .m { font-size: 10px; text-transform: uppercase; font-weight: 700; margin-top: 2px; }
+  .cal-info { flex: 1; }
+  .cal-info .ci-title { font-size: 13px; font-weight: 700; }
+  .cal-info .ci-sub { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+  .cal-badge { font-size: 10px; padding: 3px 8px; border-radius: 12px; background: rgba(255,212,59,0.4); color: #7a4a00; font-weight: 700; white-space: nowrap; }
+  .cal-item.today .cal-badge { background: rgba(255,255,255,0.35); color: #fff; }
 </style>
 </head>
 <body>
@@ -90,6 +103,7 @@ const SHEET_ID = '1pNStzDFpQCoFSE0ie_6-ma81DXDD0Ue-Tat6YXLiE18';
 const SCHEDULE_GID = '1031367568'; 
 const REGIME_GID = '1135698480'; 
 const MENU_GID = '1072523325';
+const EVENTS_GID = '1541210908'; // GID базы событий
 
 const MENU_START_DATE = '2026-10-30'; 
 
@@ -156,6 +170,7 @@ function parseDateToTime(dateStr) {
 }
 function t(h, m) { return h * 60 + m; }
 const MONTHS_RU = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MONTHS_SHORT_RU = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 const WEEKDAYS_RU = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
 function getMoscowNow() { const now = new Date(); const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Moscow', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }); const parts = {}; fmt.formatToParts(now).forEach(p => parts[p.type] = p.value); return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`); }
 function pad(n){ return n < 10 ? '0'+n : ''+n; }
@@ -169,7 +184,7 @@ function renderClock() {
   document.getElementById('clock-season').textContent = isSummer ? 'Летний период' : 'Учебный год';
 }
 
-let allLessons = []; let allRegime = []; let allMenu = []; 
+let allLessons = []; let allRegime = []; let allMenu = []; let allEvents = [];
 let activeLessonGroup = null; let activeDayGroup = '2 младшая'; 
 let uniqueGroups = []; let regimeGroups = [];
 
@@ -190,19 +205,21 @@ async function loadData() {
   const elL = document.getElementById('lesson-content');
   const elD = document.getElementById('day-content');
   const elF = document.getElementById('food-content');
+  const elE = document.getElementById('calendar-content');
   
   const now = getMoscowNow();
   const workTime = isWorkTime(now) && isWorkingDay(now);
   
   if (!workTime) {
     const stub = `<div class="waiting"><div><div class="big">😴</div>Скоро встретимся</div></div>`;
-    elL.innerHTML = stub; elD.innerHTML = stub; elF.innerHTML = stub;
+    elL.innerHTML = stub; elD.innerHTML = stub; elF.innerHTML = stub; elE.innerHTML = stub;
     return;
   }
 
   elL.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
   elD.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
   elF.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
+  elE.innerHTML = `<div class="waiting"><div><div class="big">⏳</div>Загрузка...</div></div>`;
   
   try {
     const schedRes = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SCHEDULE_GID}`);
@@ -238,17 +255,36 @@ async function loadData() {
       allMenu.push({ day: r[0], meal: r[1], dish: r[2], weight: r[3] });
     }
 
+    const eventsRes = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${EVENTS_GID}`);
+    const eventsText = await eventsRes.text();
+    const eventsRows = parseCSV(eventsText);
+
+    allEvents = [];
+    for (let i = 1; i < eventsRows.length; i++) {
+      const r = eventsRows[i];
+      if (!r[0] || r[0] === 'Дата') continue; 
+      allEvents.push({ 
+        date: r[0], 
+        time: r[1] || '', 
+        title: r[2] || '', 
+        topic: r[3] || '', 
+        group: r[4] || '', 
+        place: r[5] || '', 
+        person: r[6] || '' 
+      });
+    }
+
     uniqueGroups = [...new Set(allLessons.map(l => l.group))].sort();
     if (!activeLessonGroup || !uniqueGroups.includes(activeLessonGroup)) activeLessonGroup = uniqueGroups[0];
 
     regimeGroups = [...new Set(allRegime.map(l => l.group))];
     if (regimeGroups.length > 0 && !regimeGroups.includes(activeDayGroup)) activeDayGroup = regimeGroups[0];
 
-    renderLessonTabs(); renderDayTabs(); renderLesson(); renderDay(); renderMenu();
+    renderLessonTabs(); renderDayTabs(); renderLesson(); renderDay(); renderMenu(); renderEvents();
   } catch (err) {
     console.error(err);
     const errHtml = `<div class="waiting"><div><div class="big">⚠️</div>Ошибка загрузки</div></div>`;
-    elL.innerHTML = errHtml; elD.innerHTML = errHtml; elF.innerHTML = errHtml;
+    elL.innerHTML = errHtml; elD.innerHTML = errHtml; elF.innerHTML = errHtml; elE.innerHTML = errHtml;
   }
 }
 
@@ -423,6 +459,67 @@ function renderMenu() {
   if (!hasDishes) {
     html += `<div class="waiting"><div><div class="big">🍲</div>На этот день меню нет</div></div>`;
   }
+
+  el.innerHTML = html;
+}
+
+function renderEvents() {
+  const el = document.getElementById('calendar-content');
+  if (!allEvents.length) {
+    el.innerHTML = `<div class="waiting"><div><div class="big">🎉</div>Событий нет</div></div>`;
+    return;
+  }
+
+  const now = getMoscowNow();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const todayStr = `${currentYear}-${pad(currentMonth)}-${pad(now.getDate())}`;
+
+  const monthEvents = allEvents.filter(e => {
+    if (!e.date) return false;
+    let d = String(e.date).trim();
+    if (d.includes('.')) {
+      const parts = d.split('.');
+      if (parts.length === 3) d = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    const parts = d.split('-');
+    if (parts.length !== 3) return false;
+    return parseInt(parts[0]) === currentYear && parseInt(parts[1]) === currentMonth;
+  });
+
+  if (!monthEvents.length) {
+    el.innerHTML = `<div class="waiting"><div><div class="big">📅</div>На этот месяц событий нет</div></div>`;
+    return;
+  }
+
+  monthEvents.sort((a, b) => a.date.localeCompare(b.date));
+
+  let html = '';
+  monthEvents.forEach(ev => {
+    let d = String(ev.date).trim();
+    if (d.includes('.')) {
+      const parts = d.split('.');
+      if (parts.length === 3) d = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    const isToday = d === todayStr;
+    
+    const parts = d.split('-');
+    const day = parseInt(parts[2]);
+    const mon = MONTHS_SHORT_RU[parseInt(parts[1]) - 1];
+
+    html += `<div class="cal-item ${isToday ? 'today' : ''}">
+      <div class="cal-date">
+        <div class="d">${day}</div>
+        <div class="m">${mon}</div>
+      </div>
+      <div class="cal-info">
+        <div class="ci-title">${ev.time ? ev.time + ' · ' : ''}${ev.title} <span style="font-weight:normal;opacity:0.8;">(${ev.topic})</span></div>
+        <div class="ci-sub">${ev.group}${ev.place ? ' · ' + ev.place : ''}</div>
+        <div class="ci-sub" style="margin-top: 2px; opacity: 0.7;">${ev.person}</div>
+      </div>
+      ${isToday ? '<span class="cal-badge" style="background:#fff;color:#ff8a3d;">Сегодня</span>' : ''}
+    </div>`;
+  });
 
   el.innerHTML = html;
 }
